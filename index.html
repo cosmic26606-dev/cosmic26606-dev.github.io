@@ -2,14 +2,13 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>DECODE Simulator V1</title>
+<title>DECODE Simulator V2</title>
 
 <style>
 body{
     margin:0;
     overflow:hidden;
     background:#111;
-    font-family:Arial,sans-serif;
 }
 
 canvas{
@@ -18,12 +17,12 @@ canvas{
 
 #hud{
     position:absolute;
-    left:10px;
     top:10px;
+    left:10px;
     color:white;
+    font-family:Arial;
     background:rgba(0,0,0,.6);
     padding:10px;
-    border-radius:8px;
 }
 </style>
 </head>
@@ -31,25 +30,45 @@ canvas{
 <body>
 
 <div id="hud">
-WASD = Drive<br>
-J/L = Turn<br>
-SPACE = Intake Toggle<br>
-F = Fire Burst
+DECODE V2<br>
+WASD Drive<br>
+J/L Turn<br>
+Space Intake<br>
+F Burst Fire
 </div>
 
 <canvas id="game"></canvas>
 
 <script>
 
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+//////////////////////////////////////////////////
+// CANVAS
+//////////////////////////////////////////////////
+
+const canvas =
+    document.getElementById(
+        "game"
+    );
+
+const ctx =
+    canvas.getContext("2d");
 
 function resize(){
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+
+    canvas.width =
+        window.innerWidth;
+
+    canvas.height =
+        window.innerHeight;
+
 }
+
 resize();
-window.addEventListener("resize", resize);
+
+window.addEventListener(
+    "resize",
+    resize
+);
 
 //////////////////////////////////////////////////
 // FIELD
@@ -57,8 +76,12 @@ window.addEventListener("resize", resize);
 
 const TILE = 120;
 
-const FIELD_W = TILE * 6;
-const FIELD_H = TILE * 6;
+const FIELD = {
+
+    width: TILE * 6,
+    height: TILE * 6
+
+};
 
 //////////////////////////////////////////////////
 // INPUT
@@ -66,21 +89,35 @@ const FIELD_H = TILE * 6;
 
 const keys = {};
 
-window.addEventListener("keydown", e=>{
+window.addEventListener(
+    "keydown",
+    e=>{
 
-    keys[e.key.toLowerCase()] = true;
+        keys[
+            e.key.toLowerCase()
+        ] = true;
 
-    if(e.code === "Space"){
-        e.preventDefault();
+        if(
+            e.code==="Space"
+        ){
+
+            e.preventDefault();
+
+        }
+
     }
+);
 
-});
+window.addEventListener(
+    "keyup",
+    e=>{
 
-window.addEventListener("keyup", e=>{
+        keys[
+            e.key.toLowerCase()
+        ] = false;
 
-    keys[e.key.toLowerCase()] = false;
-
-});
+    }
+);
 
 //////////////////////////////////////////////////
 // ROBOT
@@ -88,103 +125,28 @@ window.addEventListener("keyup", e=>{
 
 const robot = {
 
-    x: FIELD_W/2,
-    y: FIELD_H/2,
+    x:
+        FIELD.width/2,
 
-    heading: 0,
+    y:
+        FIELD.height/2,
 
-    width: 90,
-    height: 90,
+    heading:0,
 
-    intakeOn: false,
+    width:84,
+    height:84,
 
-    inventory: 0,
+    intakeOn:false,
 
-    blueScore: 0,
-    redScore: 0
+    inventory:0,
+
+    maxInventory:3,
+
+    blueScore:0,
+
+    redScore:0
 
 };
-
-//////////////////////////////////////////////////
-// GOALS
-//////////////////////////////////////////////////
-
-const goals = [
-
-{
-    color:"blue",
-    x:FIELD_W-140,
-    y:120,
-    w:90,
-    h:90
-},
-
-{
-    color:"red",
-    x:FIELD_W-140,
-    y:FIELD_H-210,
-    w:90,
-    h:90
-}
-
-];
-
-//////////////////////////////////////////////////
-// ARTIFACTS
-//////////////////////////////////////////////////
-
-const artifacts = [];
-
-function spawnArtifact(x,y){
-
-    artifacts.push({
-
-        x:x,
-        y:y,
-
-        vx:0,
-        vy:0,
-
-        radius:12,
-
-        collected:false,
-        fired:false
-
-    });
-
-}
-
-//////////////////////////////////////////////////
-// DECODE-LIKE STACKS
-//////////////////////////////////////////////////
-
-for(let i=0;i<4;i++){
-
-    spawnArtifact(
-        180 + i*30,
-        180
-    );
-
-    spawnArtifact(
-        180 + i*30,
-        FIELD_H-180
-    );
-
-}
-
-for(let i=0;i<5;i++){
-
-    spawnArtifact(
-        FIELD_W/2 + i*25,
-        FIELD_H/2 - 100
-    );
-
-    spawnArtifact(
-        FIELD_W/2 + i*25,
-        FIELD_H/2 + 100
-    );
-
-}
 
 //////////////////////////////////////////////////
 // CAMERA
@@ -198,34 +160,294 @@ const camera = {
 };
 
 //////////////////////////////////////////////////
+// GOALS
+//////////////////////////////////////////////////
+
+const goals = [
+
+{
+
+    alliance:"blue",
+
+    x:
+        FIELD.width-190,
+
+    y:150,
+
+    width:110,
+
+    height:180
+
+},
+
+{
+
+    alliance:"red",
+
+    x:
+        FIELD.width-190,
+
+    y:
+        FIELD.height-330,
+
+    width:110,
+
+    height:180
+
+}
+
+];
+
+//////////////////////////////////////////////////
+// ARTIFACTS
+//////////////////////////////////////////////////
+
+const artifacts = [];
+
+function Artifact(
+    x,
+    y,
+    color
+){
+
+    return {
+
+        x,
+        y,
+
+        vx:0,
+        vy:0,
+
+        radius:11,
+
+        color,
+
+        scored:false,
+
+        fired:false
+
+    };
+
+}
+
+//////////////////////////////////////////////////
+// 36 TOTAL
+//////////////////////////////////////////////////
+
+function generateArtifacts(){
+
+    artifacts.length = 0;
+
+    //////////////////////////////////////////////////
+    // LEFT CLUSTER
+    //////////////////////////////////////////////////
+
+    for(
+        let i=0;
+        i<12;
+        i++
+    ){
+
+        artifacts.push(
+
+            Artifact(
+
+                120 +
+                (i%4)*28,
+
+                120 +
+                Math.floor(i/4)
+                *28,
+
+                "purple"
+
+            )
+
+        );
+
+    }
+
+    //////////////////////////////////////////////////
+    // CENTER CLUSTER
+    //////////////////////////////////////////////////
+
+    for(
+        let i=0;
+        i<12;
+        i++
+    ){
+
+        artifacts.push(
+
+            Artifact(
+
+                FIELD.width/2
+                -50
+                +(i%4)*28,
+
+                FIELD.height/2
+                -50
+                +Math.floor(i/4)
+                *28,
+
+                "purple"
+
+            )
+
+        );
+
+    }
+
+    //////////////////////////////////////////////////
+    // RIGHT CLUSTER
+    //////////////////////////////////////////////////
+
+    for(
+        let i=0;
+        i<12;
+        i++
+    ){
+
+        artifacts.push(
+
+            Artifact(
+
+                FIELD.width
+                -260
+                +(i%4)*28,
+
+                FIELD.height/2
+                -50
+                +Math.floor(i/4)
+                *28,
+
+                "green"
+
+            )
+
+        );
+
+    }
+
+}
+
+generateArtifacts();
+
+//////////////////////////////////////////////////
+// UTILITIES
+//////////////////////////////////////////////////
+
+function rotatePoint(
+    x,
+    y,
+    angle
+){
+
+    return {
+
+        x:
+            x*Math.cos(angle)
+            -
+            y*Math.sin(angle),
+
+        y:
+            x*Math.sin(angle)
+            +
+            y*Math.cos(angle)
+
+    };
+
+}
+
+function worldToRobot(
+    wx,
+    wy
+){
+
+    const dx =
+        wx-robot.x;
+
+    const dy =
+        wy-robot.y;
+
+    const c =
+        Math.cos(
+            -robot.heading
+        );
+
+    const s =
+        Math.sin(
+            -robot.heading
+        );
+
+    return {
+
+        x:
+            dx*c
+            -
+            dy*s,
+
+        y:
+            dx*s
+            +
+            dy*c
+
+    };
+
+}
+
+//////////////////////////////////////////////////
 // DRAW FIELD
 //////////////////////////////////////////////////
 
 function drawField(){
 
-    for(let x=0;x<6;x++){
+    //////////////////////////////////////////////////
+    // TILES
+    //////////////////////////////////////////////////
 
-        for(let y=0;y<6;y++){
+    for(
+        let x=0;
+        x<6;
+        x++
+    ){
+
+        for(
+            let y=0;
+            y<6;
+            y++
+        ){
 
             ctx.fillStyle =
-                (x+y)%2
-                ? "#2f2f2f"
-                : "#3a3a3a";
+                (
+                    x+y
+                )%2
+                ?
+                "#353535"
+                :
+                "#404040";
 
             ctx.fillRect(
+
                 x*TILE,
                 y*TILE,
+
                 TILE,
                 TILE
+
             );
 
-            ctx.strokeStyle="#111";
+            ctx.strokeStyle =
+                "#222";
 
             ctx.strokeRect(
+
                 x*TILE,
                 y*TILE,
+
                 TILE,
                 TILE
+
             );
 
         }
@@ -233,184 +455,109 @@ function drawField(){
     }
 
     //////////////////////////////////////////////////
-    // DECODE DIAGONALS
+    // CROSSING TAPES
     //////////////////////////////////////////////////
 
-    ctx.strokeStyle="white";
-    ctx.lineWidth=6;
+    ctx.strokeStyle =
+        "white";
 
-    ctx.beginPath();
-    ctx.moveTo(0,0);
-    ctx.lineTo(360,360);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(0,FIELD_H);
-    ctx.lineTo(360,360);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(FIELD_W,240);
-    ctx.lineTo(FIELD_W-120,360);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(FIELD_W,480);
-    ctx.lineTo(FIELD_W-120,360);
-    ctx.stroke();
-
-    //////////////////////////////////////////////////
-    // BLUE GOAL
-    //////////////////////////////////////////////////
-
-    ctx.fillStyle="#2255ff";
-
-    ctx.fillRect(
-        goals[0].x,
-        goals[0].y,
-        goals[0].w,
-        goals[0].h
-    );
-
-    //////////////////////////////////////////////////
-    // RED GOAL
-    //////////////////////////////////////////////////
-
-    ctx.fillStyle="#ff3333";
-
-    ctx.fillRect(
-        goals[1].x,
-        goals[1].y,
-        goals[1].w,
-        goals[1].h
-    );
-
-}
-
-//////////////////////////////////////////////////
-// DRAW ROBOT
-//////////////////////////////////////////////////
-
-function drawRobot(){
-
-    ctx.save();
-
-    ctx.translate(
-        robot.x,
-        robot.y
-    );
-
-    ctx.rotate(
-        robot.heading
-    );
-
-    ctx.fillStyle="#00c8ff";
-
-    ctx.fillRect(
-        -robot.width/2,
-        -robot.height/2,
-        robot.width,
-        robot.height
-    );
-
-    //////////////////////////////////////////////////
-    // FRONT
-    //////////////////////////////////////////////////
-
-    ctx.strokeStyle="white";
-    ctx.lineWidth=4;
+    ctx.lineWidth = 7;
 
     ctx.beginPath();
 
-    ctx.moveTo(0,0);
-    ctx.lineTo(
-        robot.width/2,
+    ctx.moveTo(
+        0,
         0
     );
 
+    ctx.lineTo(
+        360,
+        360
+    );
+
+    ctx.stroke();
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        0,
+        FIELD.height
+    );
+
+    ctx.lineTo(
+        360,
+        360
+    );
+
     ctx.stroke();
 
     //////////////////////////////////////////////////
-    // INTAKE / SHOOTER SIDE
+    // BLUE LOADING AREA
     //////////////////////////////////////////////////
 
     ctx.fillStyle =
-        robot.intakeOn
-        ? "lime"
-        : "red";
+        "#2244ff";
 
     ctx.fillRect(
-        robot.width/2-8,
-        -20,
-        16,
-        40
+        0,
+        0,
+        110,
+        110
     );
 
-    ctx.restore();
+    //////////////////////////////////////////////////
+    // RED LOADING AREA
+    //////////////////////////////////////////////////
 
-}
+    ctx.fillStyle =
+        "#ff3333";
 
-//////////////////////////////////////////////////
-// DRAW ARTIFACTS
-//////////////////////////////////////////////////
+    ctx.fillRect(
+        0,
+        FIELD.height-110,
+        110,
+        110
+    );
 
-function drawArtifacts(){
+    //////////////////////////////////////////////////
+    // GOALS
+    //////////////////////////////////////////////////
 
-    for(const a of artifacts){
+    for(
+        const goal
+        of goals
+    ){
 
-        ctx.fillStyle="orange";
+        ctx.fillStyle =
+            goal.alliance
+            ==="blue"
+            ?
+            "#2244ff"
+            :
+            "#ff3333";
 
-        ctx.beginPath();
+        ctx.fillRect(
 
-        ctx.arc(
-            a.x,
-            a.y,
-            a.radius,
-            0,
-            Math.PI*2
+            goal.x,
+            goal.y,
+
+            goal.width,
+            goal.height
+
         );
 
-        ctx.fill();
     }
 
 }
 //////////////////////////////////////////////////
-// HELPERS
+// INPUT HANDLING (TOGGLE INTAKE + FIRE)
 //////////////////////////////////////////////////
 
-function rotatePoint(x,y,a){
+window.addEventListener("keydown", e=>{
 
-    return {
+    const k = e.key.toLowerCase();
 
-        x:x*Math.cos(a)-y*Math.sin(a),
-        y:x*Math.sin(a)+y*Math.cos(a)
-
-    };
-
-}
-
-function worldToRobot(wx,wy){
-
-    const dx = wx - robot.x;
-    const dy = wy - robot.y;
-
-    const c = Math.cos(-robot.heading);
-    const s = Math.sin(-robot.heading);
-
-    return {
-
-        x:dx*c - dy*s,
-        y:dx*s + dy*c
-
-    };
-
-}
-
-//////////////////////////////////////////////////
-// INTAKE TOGGLE
-//////////////////////////////////////////////////
-
-window.addEventListener("keydown",e=>{
+    if(k==="f") burstFire();
 
     if(e.code==="Space"){
 
@@ -425,18 +572,18 @@ window.addEventListener("keydown",e=>{
 // BURST FIRE
 //////////////////////////////////////////////////
 
-let burstBusy = false;
+let burstLock = false;
 
-function fireOne(){
+function fireArtifact(){
 
-    if(robot.inventory <= 0)
+    if(robot.inventory<=0)
         return;
 
     robot.inventory--;
 
     const muzzle =
         rotatePoint(
-            robot.width/2 + 30,
+            robot.width/2 + 25,
             0,
             robot.heading
         );
@@ -446,12 +593,21 @@ function fireOne(){
         x:robot.x + muzzle.x,
         y:robot.y + muzzle.y,
 
-        vx:Math.cos(robot.heading)*700,
-        vy:Math.sin(robot.heading)*700,
+        vx:
+            Math.cos(robot.heading)
+            * 650,
+
+        vy:
+            Math.sin(robot.heading)
+            * 650,
 
         radius:10,
 
-        fired:true
+        fired:true,
+
+        color:"orange",
+
+        scored:false
 
     });
 
@@ -459,13 +615,13 @@ function fireOne(){
 
 function burstFire(){
 
-    if(burstBusy)
+    if(burstLock)
         return;
 
-    if(robot.inventory <= 0)
+    if(robot.inventory<=0)
         return;
 
-    burstBusy = true;
+    burstLock = true;
 
     const shots =
         Math.min(
@@ -473,96 +629,76 @@ function burstFire(){
             robot.inventory
         );
 
-    for(let i=0;i<shots;i++){
+    for(
+        let i=0;
+        i<shots;
+        i++
+    ){
 
         setTimeout(()=>{
 
-            fireOne();
+            fireArtifact();
 
-        },i*167);
+        }, i*167);
 
     }
 
     setTimeout(()=>{
 
-        burstBusy=false;
+        burstLock = false;
 
     },500);
 
 }
 
-window.addEventListener("keydown",e=>{
-
-    if(e.key.toLowerCase()==="f"){
-
-        burstFire();
-
-    }
-
-});
-
 //////////////////////////////////////////////////
-// UPDATE ROBOT
+// ROBOT UPDATE (FIELD-CENTRIC)
 //////////////////////////////////////////////////
 
 function updateRobot(dt){
 
-    let mx=0;
-    let my=0;
+    let x = 0;
+    let y = 0;
 
-    if(keys["w"]) my-=1;
-    if(keys["s"]) my+=1;
-    if(keys["a"]) mx-=1;
-    if(keys["d"]) mx+=1;
+    if(keys["w"]) y -= 1;
+    if(keys["s"]) y += 1;
+    if(keys["a"]) x -= 1;
+    if(keys["d"]) x += 1;
 
     const mag =
-        Math.hypot(mx,my);
+        Math.hypot(x,y);
 
     if(mag>0){
 
-        mx/=mag;
-        my/=mag;
+        x/=mag;
+        y/=mag;
 
     }
 
     const speed = 280;
 
-    robot.x += mx*speed*dt;
-    robot.y += my*speed*dt;
+    robot.x += x*speed*dt;
+    robot.y += y*speed*dt;
 
     if(keys["j"])
-        robot.heading -= 2.8*dt;
+        robot.heading -= 2.7*dt;
 
     if(keys["l"])
-        robot.heading += 2.8*dt;
-
-    robot.x =
-        Math.max(
-            robot.width/2,
-            Math.min(
-                FIELD_W-robot.width/2,
-                robot.x
-            )
-        );
-
-    robot.y =
-        Math.max(
-            robot.height/2,
-            Math.min(
-                FIELD_H-robot.height/2,
-                robot.y
-            )
-        );
+        robot.heading += 2.7*dt;
 
 }
 
 //////////////////////////////////////////////////
-// UPDATE ARTIFACTS
+// ARTIFACT UPDATE + COLLISION + SCORING
 //////////////////////////////////////////////////
 
 function updateArtifacts(dt){
 
-    for(let i=artifacts.length-1;i>=0;i--){
+    for(
+        let i=artifacts.length-1;
+        i>=0;
+        i--
+    ){
 
         const a = artifacts[i];
 
@@ -573,37 +709,7 @@ function updateArtifacts(dt){
         a.vy *= 0.99;
 
         //////////////////////////////////////////////////
-        // GOAL SCORING
-        //////////////////////////////////////////////////
-
-        if(a.fired){
-
-            for(const goal of goals){
-
-                if(
-                    a.x > goal.x &&
-                    a.x < goal.x+goal.w &&
-                    a.y > goal.y &&
-                    a.y < goal.y+goal.h
-                ){
-
-                    if(goal.color==="blue")
-                        robot.blueScore++;
-
-                    if(goal.color==="red")
-                        robot.redScore++;
-
-                    artifacts.splice(i,1);
-
-                    continue;
-                }
-
-            }
-
-        }
-
-        //////////////////////////////////////////////////
-        // ROBOT COLLISION
+        // ROBOT COLLISION (NO PHASING)
         //////////////////////////////////////////////////
 
         const local =
@@ -639,8 +745,7 @@ function updateArtifacts(dt){
                     Math.sign(local.x)
                     * ox;
 
-            }
-            else{
+            }else{
 
                 local.y +=
                     Math.sign(local.y)
@@ -655,13 +760,45 @@ function updateArtifacts(dt){
                     robot.heading
                 );
 
-            a.x =
-                robot.x +
-                world.x;
+            a.x = robot.x + world.x;
+            a.y = robot.y + world.y;
 
-            a.y =
-                robot.y +
-                world.y;
+        }
+
+        //////////////////////////////////////////////////
+        // SCORING + EJECTION (DO NOT DELETE ARTIFACT)
+        //////////////////////////////////////////////////
+
+        if(a.fired && !a.scored){
+
+            for(const g of goals){
+
+                if(
+                    a.x > g.x &&
+                    a.x < g.x + g.width &&
+                    a.y > g.y &&
+                    a.y < g.y + g.height
+                ){
+
+                    a.scored = true;
+
+                    if(g.alliance==="blue")
+                        robot.blueScore++;
+
+                    if(g.alliance==="red")
+                        robot.redScore++;
+
+                    // eject artifact out of goal
+                    a.vx = 200;
+                    a.vy = (Math.random()-0.5)*120;
+
+                    a.x = g.x + g.width + 20;
+
+                    break;
+
+                }
+
+            }
 
         }
 
@@ -670,7 +807,7 @@ function updateArtifacts(dt){
 }
 
 //////////////////////////////////////////////////
-// INTAKE SYSTEM
+// INTAKE SYSTEM (MAX 3)
 //////////////////////////////////////////////////
 
 function updateIntake(){
@@ -694,7 +831,11 @@ function updateIntake(){
     const iy =
         robot.y + intake.y;
 
-    for(let i=artifacts.length-1;i>=0;i--){
+    for(
+        let i=artifacts.length-1;
+        i>=0;
+        i--
+    ){
 
         const a = artifacts[i];
 
@@ -715,10 +856,7 @@ function updateIntake(){
                     a.y
                 );
 
-            if(
-                local.x >
-                robot.width/2 - 6
-            ){
+            if(local.x > robot.width/2 - 5){
 
                 artifacts.splice(i,1);
 
@@ -752,7 +890,77 @@ function updateCamera(){
 }
 
 //////////////////////////////////////////////////
-// DRAW HUD
+// DRAW ROBOT
+//////////////////////////////////////////////////
+
+function drawRobot(){
+
+    ctx.save();
+
+    ctx.translate(
+        robot.x,
+        robot.y
+    );
+
+    ctx.rotate(robot.heading);
+
+    ctx.fillStyle="#00c8ff";
+
+    ctx.fillRect(
+        -robot.width/2,
+        -robot.height/2,
+        robot.width,
+        robot.height
+    );
+
+    // intake indicator
+    ctx.fillStyle =
+        robot.intakeOn
+        ? "lime"
+        : "red";
+
+    ctx.fillRect(
+        robot.width/2 - 10,
+        -18,
+        14,
+        36
+    );
+
+    ctx.restore();
+
+}
+
+//////////////////////////////////////////////////
+// DRAW ARTIFACTS
+//////////////////////////////////////////////////
+
+function drawArtifacts(){
+
+    for(const a of artifacts){
+
+        ctx.fillStyle =
+            a.color==="green"
+            ? "#00cc55"
+            : "#aa55ff";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            a.x,
+            a.y,
+            a.radius,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+    }
+
+}
+
+//////////////////////////////////////////////////
+// HUD
 //////////////////////////////////////////////////
 
 function drawHUD(){
@@ -762,36 +970,28 @@ function drawHUD(){
     );
 
     ctx.fillStyle="white";
-    ctx.font="18px Arial";
+
+    ctx.font="16px Arial";
 
     ctx.fillText(
         "Inventory: "
         + robot.inventory,
         20,
-        120
+        40
     );
 
     ctx.fillText(
         "Blue Score: "
         + robot.blueScore,
         20,
-        145
+        65
     );
 
     ctx.fillText(
         "Red Score: "
         + robot.redScore,
         20,
-        170
-    );
-
-    ctx.fillText(
-        "Intake: "
-        + (robot.intakeOn
-            ? "ON"
-            : "OFF"),
-        20,
-        195
+        90
     );
 
 }
@@ -840,16 +1040,8 @@ function loop(now){
 
     drawHUD();
 
-    requestAnimationFrame(
-        loop
-    );
+    requestAnimationFrame(loop);
 
 }
 
-requestAnimationFrame(
-    loop
-);
-
-</script>
-</body>
-</html>
+requestAnimationFrame(loop);
