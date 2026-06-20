@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTC DECODE Driver Simulator (Field-Centric)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            user-select: none;
+        }
+        h1 {
+            margin: 10px 0 5px 0;
+            font-size: 26px;
+            color: #ffaa00;
+            text-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+        }
+        #sim-container {
+            display: flex;
+            gap: 20px;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+            align-items: flex-start;
+        }
+        canvas {
+            background-color: #111111;
+            border: 4px solid #3d3d3d;
+            border-radius: 6px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+        #dashboard {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .panel {
+            background: #333333;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #ffaa00;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .panel h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #dddddd;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+        .stat {
+            font-size: 14px;
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+            font-family: monospace;
+        }
+        .val {
+            font-weight: bold;
+            color: #00ffcc;
+        }
+        .controls-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .controls-table td {
+            padding: 4px 0;
+            font-size: 13px;
+            color: #cccccc;
+        }
+        .key-container {
+            display: flex;
+            gap: 4px;
+        }
+        .key {
+            background: #1e1e1e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            font-family: monospace;
+            font-weight: bold;
+            color: #ffaa00;
+            box-shadow: 0 2px 0 #000;
+        }
+        .instructions-text {
+            font-size: 12px;
+            margin: 0;
+            line-height: 1.5;
+            color: #b5b5b5;
+        }
+        #reset-btn {
+            background: #ffaa00;
+            color: #111;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+        #reset-btn:hover {
+            background: #ffbb33;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>FTC DECODE Driver Practice Tool</h1>
+    
+    <div id="sim-container">
+        <canvas id="fieldCanvas" width="600" height="600"></canvas>
+        
+        <div id="dashboard">
+            <div class="panel">
+                <h3>Robot Status</h3>
+                <div class="stat">Drive Mode: <span class="val" style="color:#ffaa00;">FIELD-CENTRIC</span></div>
+                <div class="stat">Heading: <span class="val" id="ui-heading">0°</span></div>
+                <div class="stat">Intake State: <span class="val" id="ui-intake">OFF</span></div>
+                <div class="stat">Cargo Chamber: <span class="val" id="ui-cargo">0 / 3</span></div>
+                <div class="stat">Launcher State: <span class="val" id="ui-launcher">READY</span></div>
+                <div class="stat">Score Tracker: <span class="val" id="ui-score" style="color:#00ff00; font-size: 16px;">0</span></div>
+            </div>
+            
+            <div class="panel">
+                <h3>Controls Mapping</h3>
+                <table class="controls-table">
+                    <tr>
+                        <td width="40%"><div class="key-container"><span class="key">W</span><span class="key">S</span></div></td>
+                        <td>Drive Field N / S</td>
+                    </tr>
+                    <tr>
+                        <td><div class="key-container"><span class="key">A</span><span class="key">D</span></div></td>
+                        <td>Strafe Field W / E</td>
+                    </tr>
+                    <tr>
+                        <td><div class="key-container"><span class="key">J</span><span class="key">L</span></div></td>
+                        <td>Turn Left / Right</td>
+                    </tr>
+                    <tr>
+                        <td><div class="key-container"><span class="key">Space</span></div></td>
+                        <td>Intake (Hold)</td>
+                    </tr>
+                    <tr>
+                        <td><div class="key-container"><span class="key">F</span></div></td>
+                        <td>0.5s Timed Launch</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="panel" style="border-left-color: #cc00ff;">
+                <h3>DECODE Game Rules</h3>
+                <p class="instructions-text">
+                    1. Use <b>WASD</b> to move around the field relative to your view (Field-Centric).<br><br>
+                    2. Hold <b>Spacebar</b> to activate the intake over Green/Purple elements.<br><br>
+                    3. Drive near your scoring goals (Top Corners) and press <b>F</b> to fire a 0.5-second power shot!
+                </p>
+            </div>
+            
+            <button id="reset-btn" onclick="resetSimulator()">Reset Field Heading</button>
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById('fieldCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const uiHeading = document.getElementById('ui-heading');
+    const uiIntake = document.getElementById('ui-intake');
+    const uiCargo = document.getElementById('ui-cargo');
+    const uiLauncher = document.getElementById('ui-launcher');
+    const uiScore = document.getElementById('ui-score');
+
+    const keys = {};
+    window.addEventListener('keydown', e => { 
+        keys[e.key.toLowerCase()] = true; 
+        if (e.key === ' ' || e.key.toLowerCase() === 'f') {
+            e.preventDefault();
+        }
+    });
+    window.addEventListener('keyup', e => { 
+        keys[e.key.toLowerCase()] = false; 
+    });
+
+    const robot = {
+        x: 300,
+        y: 450,
+        size: 38,
+        heading: -Math.PI / 2,
+        speed: 4.5,
+        turnSpeed: 0.06,
+        cargo: 0,
+        maxCargo: 3,
+        isFiring: false,
+        firingTimer: 0,
+        fireDurationFrames: 30
+    };
+
+    const goals = [
+        { x: 80, y: 80, size: 55, color: '#ff3333', team: 'Red Vortex' },
+        { x: 520, y: 80, size: 55, color: '#3333ff', team: 'Blue Vortex' }
+    ];
+
+    let score = 0;
+    let artifacts = [];
+    let launchedParticles = [];
+    const elementColors = ['#00ff66', '#cc00ff'];
+
+    function spawnArtifacts() {
+        while (artifacts.length < 15) {
+            let proposedX = Math.random() * (canvas.width - 120) + 60;
+            let proposedY = Math.random() * (canvas.height - 220) + 160;
+            
+            let overlapping = false;
+            goals.forEach(g => {
+                if (Math.hypot(proposedX - g.x, proposedY - g.y) < g.size + 30) {
+                    overlapping = true;
+                }
+            });
+
+            if (!overlapping) {
+                artifacts.push({
+                    x: proposedX,
+                    y: proposedY,
+                    radius: 7,
+                    color: elementColors[Math.floor(Math.random() * elementColors.length)]
+                });
+            }
+        }
+    }
+
+    function resetSimulator() {
+        robot.heading = -Math.PI / 2;
+        robot.x = 300;
+        robot.y = 450;
+    }
+
+    function executeLaunch() {
+        if (!robot.isFiring && robot.cargo > 0) {
+            robot.isFiring = true;
+            robot.firingTimer = robot.fireDurationFrames;
+            
+            let scoredSuccess = false;
+            goals.forEach(goal => {
+                let currentDistance = Math.hypot(robot.x - goal.x, robot.y - goal.y);
+                if (currentDistance < 180) {
+                    scoredSuccess = true;
+                }
+            });
+
+            for (let i = 0; i < robot.cargo * 4; i++) {
+                launchedParticles.push({
+                    x: robot.x + Math.cos(robot.heading) * (robot.size / 2),
+                    y: robot.y + Math.sin(robot.heading) * (robot.size / 2),
+                    vx: Math.cos(robot.heading + (Math.random() * 0.4 - 0.2)) * (6 + Math.random() * 4),
+                    vy: Math.sin(robot.heading + (Math.random() * 0.4 - 0.2)) * (6 + Math.random() * 4),
+                    life: 30,
+                    color: elementColors[Math.floor(Math.random() * elementColors.length)]
+                });
+            }
+
+            if (scoredSuccess) {
+                score += robot.cargo * 15;
+            }
+            robot.cargo = 0;
+        }
+    }
+
+    function updatePhysics() {
+        let inputX = 0;
+        let inputY = 0;
+
+        if (keys['w']) inputY -= 1;
+        if (keys['s']) inputY += 1;
+        if (keys['a']) inputX -= 1;
+        if (keys['d']) inputX += 1;
+
+        if (inputX !== 0 || inputY !== 0) {
+            let magnitude = Math.hypot(inputX, inputY);
+            inputX /= magnitude;
+inputY /= magnitude;robot.x += inputX * robot.speed;robot.y += inputY * robot.speed;}if (keys['j']) robot.heading -= robot.turnSpeed;if (keys['l']) robot.heading += robot.turnSpeed;robot.heading = (robot.heading + Math.PI * 2) % (Math.PI * 2);robot.x = Math.max(robot.size / 2 + 10, Math.min(canvas.width - robot.size / 2 - 10, robot.x));robot.y = Math.max(robot.size / 2 + 10, Math.min(canvas.height - robot.size / 2 - 10, robot.y));if (keys[' '] && robot.cargo < robot.maxCargo) {for (let i = artifacts.length - 1; i >= 0; i--) {let distance = Math.hypot(robot.x - artifacts[i].x, robot.y - artifacts[i].y);if (distance < (robot.size / 2 + artifacts[i].radius + 5)) {artifacts.splice(i, 1);robot.cargo++;if (robot.cargo >= robot.maxCargo) break;}}}if (keys['f']) {executeLaunch();}if (robot.isFiring) {robot.firingTimer--;if (robot.firingTimer <= 0) {robot.isFiring = false;}}for (let i = launchedParticles.length - 1; i >= 0; i--) {let p = launchedParticles[i];p.x += p.vx;p.y += p.vy;p.life--;if (p.life <= 0) {launchedParticles.splice(i, 1);}}spawnArtifacts();syncTelemetryData();}function syncTelemetryData() {let degreesDisplay = Math.round((robot.heading * 180 / Math.PI) + 90);if (degreesDisplay < 0) degreesDisplay += 360;if (degreesDisplay >= 360) degreesDisplay -= 360;uiHeading.innerText = degreesDisplay + "°";uiIntake.innerText = keys[' '] ? "RUNNING" : "OFF";uiIntake.style.color = keys[' '] ? "#00ff66" : "#ffaa00";uiCargo.innerText = robot.cargo + " / " + robot.maxCargo;if (robot.isFiring) {uiLauncher.innerText = "FIRING (0.5s)";uiLauncher.style.color = "#ff3333";} else {uiLauncher.innerText = robot.cargo > 0 ? "READY TO FIRE" : "EMPTY";uiLauncher.style.color = robot.cargo > 0 ? "#00ffcc" : "#888888";}uiScore.innerText = score;}function renderGraphics() {ctx.clearRect(0, 0, canvas.width, canvas.height);ctx.strokeStyle = "#252525";ctx.lineWidth = 2;for (let x = 100; x < canvas.width; x += 100) {ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();}for (let y = 100; y < canvas.height; y += 100) {ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();}goals.forEach(goal => {ctx.fillStyle = goal.color;ctx.globalAlpha = 0.15;ctx.beginPath();ctx.arc(goal.x, goal.y, goal.size + 60, 0, Math.PI * 2);ctx.fill();ctx.globalAlpha = 1.0;ctx.beginPath();ctx.arc(goal.x, goal.y, goal.size, 0, Math.PI * 2);ctx.lineWidth = 5;ctx.strokeStyle = "#ffffff";ctx.stroke();ctx.fill();ctx.fillStyle = "#ffffff";ctx.font = "bold 11px Arial";ctx.textAlign = "center";ctx.fillText(goal.team, goal.x, goal.y + 4);});artifacts.forEach(art => {ctx.fillStyle = art.color;ctx.beginPath();ctx.arc(art.x, art.y, art.radius, 0, Math.PI * 2);ctx.fill();ctx.strokeStyle = "#111111";ctx.lineWidth = 1.5;ctx.stroke();});launchedParticles.forEach(p => {ctx.fillStyle = p.color;ctx.globalAlpha = p.life / 30;ctx.beginPath();ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);ctx.fill();});ctx.globalAlpha = 1.0;ctx.save();ctx.translate(robot.x, robot.y);ctx.rotate(robot.heading);ctx.fillStyle = "#222222";const wW = 10;const wL = 16;const offset = robot.size / 2 - 2;ctx.fillRect(-offset - 2, -offset, wW, wL);ctx.fillRect(offset - wW + 2, -offset, wW, wL);ctx.fillRect(-offset - 2, offset - wL, wW, wL);ctx.fillRect(offset - wW + 2, offset - wL, wW, wL);ctx.fillStyle = robot.isFiring ? "#ff3333" : "#444444";ctx.strokeStyle = "#ffaa00";ctx.lineWidth = 3;ctx.beginPath();ctx.rect(-robot.size / 2, -robot.size / 2, robot.size, robot.size);ctx.fill();ctx.stroke();ctx.fillStyle = "#ffaa00";ctx.beginPath();ctx.moveTo(robot.size / 2, -6);ctx.lineTo(robot.size / 2 + 12, 0);ctx.lineTo(robot.size / 2, 6);ctx.fill();if (keys[' ']) {ctx.fillStyle = "#00ff66";ctx.fillRect(robot.size / 2 - 4, -robot.size / 4, 5, robot.size / 2);}ctx.fillStyle = "#00ffcc";for (let i = 0; i < robot.cargo; i++) {ctx.beginPath();ctx.arc(-10 + (i * 10), 0, 3, 0, Math.PI * 2);ctx.fill();}ctx.restore();}function simulationLoop() {updatePhysics();renderGraphics();requestAnimationFrame(simulationLoop);}spawnArtifacts();simulationLoop();
