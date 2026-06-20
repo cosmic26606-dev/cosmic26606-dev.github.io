@@ -2,40 +2,46 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>FTC Driver Simulator</title>
+<title>DECODE Simulator V1</title>
+
 <style>
 body{
     margin:0;
     overflow:hidden;
     background:#111;
-    color:white;
-    font-family:sans-serif;
+    font-family:Arial,sans-serif;
 }
-#info{
-    position:absolute;
-    left:10px;
-    top:10px;
-    background:rgba(0,0,0,.6);
-    padding:10px;
-}
+
 canvas{
     display:block;
 }
+
+#hud{
+    position:absolute;
+    left:10px;
+    top:10px;
+    color:white;
+    background:rgba(0,0,0,.6);
+    padding:10px;
+    border-radius:8px;
+}
 </style>
 </head>
+
 <body>
 
-<div id="info">
-WASD = Field-Centric Drive<br>
+<div id="hud">
+WASD = Drive<br>
 J/L = Turn<br>
-SPACE = Toggle Intake<br>
-F = Rapid Fire (3 artifacts, 0.5s spacing)<br>
+SPACE = Intake Toggle<br>
+F = Fire Burst
 </div>
 
-<canvas id="c"></canvas>
+<canvas id="game"></canvas>
 
 <script>
-const canvas = document.getElementById("c");
+
+const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 function resize(){
@@ -45,180 +51,520 @@ function resize(){
 resize();
 window.addEventListener("resize", resize);
 
+//////////////////////////////////////////////////
+// FIELD
+//////////////////////////////////////////////////
+
+const TILE = 120;
+
+const FIELD_W = TILE * 6;
+const FIELD_H = TILE * 6;
+
+//////////////////////////////////////////////////
+// INPUT
+//////////////////////////////////////////////////
+
 const keys = {};
 
 window.addEventListener("keydown", e=>{
+
     keys[e.key.toLowerCase()] = true;
 
     if(e.code === "Space"){
         e.preventDefault();
-        intakeOn = !intakeOn;
     }
 
-    if(e.key.toLowerCase() === "f"){
-        rapidFire();
-    }
 });
 
 window.addEventListener("keyup", e=>{
+
     keys[e.key.toLowerCase()] = false;
+
 });
 
 //////////////////////////////////////////////////
-// Robot
+// ROBOT
 //////////////////////////////////////////////////
 
 const robot = {
-    x: 500,
-    y: 350,
+
+    x: FIELD_W/2,
+    y: FIELD_H/2,
+
     heading: 0,
-    width: 80,
-    height: 80
+
+    width: 90,
+    height: 90,
+
+    intakeOn: false,
+
+    inventory: 0,
+
+    blueScore: 0,
+    redScore: 0
+
 };
 
-let intakeOn = false;
+//////////////////////////////////////////////////
+// GOALS
+//////////////////////////////////////////////////
+
+const goals = [
+
+{
+    color:"blue",
+    x:FIELD_W-140,
+    y:120,
+    w:90,
+    h:90
+},
+
+{
+    color:"red",
+    x:FIELD_W-140,
+    y:FIELD_H-210,
+    w:90,
+    h:90
+}
+
+];
 
 //////////////////////////////////////////////////
-// Artifacts
+// ARTIFACTS
 //////////////////////////////////////////////////
 
 const artifacts = [];
 
-function spawnFieldArtifacts(){
-    for(let i=0;i<20;i++){
-        artifacts.push({
-            x: 100 + Math.random()*1000,
-            y: 100 + Math.random()*600,
-            vx:0,
-            vy:0,
-            r:12,
-            held:false
-        });
-    }
+function spawnArtifact(x,y){
+
+    artifacts.push({
+
+        x:x,
+        y:y,
+
+        vx:0,
+        vy:0,
+
+        radius:12,
+
+        collected:false,
+        fired:false
+
+    });
+
 }
 
-spawnFieldArtifacts();
+//////////////////////////////////////////////////
+// DECODE-LIKE STACKS
+//////////////////////////////////////////////////
+
+for(let i=0;i<4;i++){
+
+    spawnArtifact(
+        180 + i*30,
+        180
+    );
+
+    spawnArtifact(
+        180 + i*30,
+        FIELD_H-180
+    );
+
+}
+
+for(let i=0;i<5;i++){
+
+    spawnArtifact(
+        FIELD_W/2 + i*25,
+        FIELD_H/2 - 100
+    );
+
+    spawnArtifact(
+        FIELD_W/2 + i*25,
+        FIELD_H/2 + 100
+    );
+
+}
 
 //////////////////////////////////////////////////
-// Utility
+// CAMERA
+//////////////////////////////////////////////////
+
+const camera = {
+
+    x:0,
+    y:0
+
+};
+
+//////////////////////////////////////////////////
+// DRAW FIELD
+//////////////////////////////////////////////////
+
+function drawField(){
+
+    for(let x=0;x<6;x++){
+
+        for(let y=0;y<6;y++){
+
+            ctx.fillStyle =
+                (x+y)%2
+                ? "#2f2f2f"
+                : "#3a3a3a";
+
+            ctx.fillRect(
+                x*TILE,
+                y*TILE,
+                TILE,
+                TILE
+            );
+
+            ctx.strokeStyle="#111";
+
+            ctx.strokeRect(
+                x*TILE,
+                y*TILE,
+                TILE,
+                TILE
+            );
+
+        }
+
+    }
+
+    //////////////////////////////////////////////////
+    // DECODE DIAGONALS
+    //////////////////////////////////////////////////
+
+    ctx.strokeStyle="white";
+    ctx.lineWidth=6;
+
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.lineTo(360,360);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,FIELD_H);
+    ctx.lineTo(360,360);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(FIELD_W,240);
+    ctx.lineTo(FIELD_W-120,360);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(FIELD_W,480);
+    ctx.lineTo(FIELD_W-120,360);
+    ctx.stroke();
+
+    //////////////////////////////////////////////////
+    // BLUE GOAL
+    //////////////////////////////////////////////////
+
+    ctx.fillStyle="#2255ff";
+
+    ctx.fillRect(
+        goals[0].x,
+        goals[0].y,
+        goals[0].w,
+        goals[0].h
+    );
+
+    //////////////////////////////////////////////////
+    // RED GOAL
+    //////////////////////////////////////////////////
+
+    ctx.fillStyle="#ff3333";
+
+    ctx.fillRect(
+        goals[1].x,
+        goals[1].y,
+        goals[1].w,
+        goals[1].h
+    );
+
+}
+
+//////////////////////////////////////////////////
+// DRAW ROBOT
+//////////////////////////////////////////////////
+
+function drawRobot(){
+
+    ctx.save();
+
+    ctx.translate(
+        robot.x,
+        robot.y
+    );
+
+    ctx.rotate(
+        robot.heading
+    );
+
+    ctx.fillStyle="#00c8ff";
+
+    ctx.fillRect(
+        -robot.width/2,
+        -robot.height/2,
+        robot.width,
+        robot.height
+    );
+
+    //////////////////////////////////////////////////
+    // FRONT
+    //////////////////////////////////////////////////
+
+    ctx.strokeStyle="white";
+    ctx.lineWidth=4;
+
+    ctx.beginPath();
+
+    ctx.moveTo(0,0);
+    ctx.lineTo(
+        robot.width/2,
+        0
+    );
+
+    ctx.stroke();
+
+    //////////////////////////////////////////////////
+    // INTAKE / SHOOTER SIDE
+    //////////////////////////////////////////////////
+
+    ctx.fillStyle =
+        robot.intakeOn
+        ? "lime"
+        : "red";
+
+    ctx.fillRect(
+        robot.width/2-8,
+        -20,
+        16,
+        40
+    );
+
+    ctx.restore();
+
+}
+
+//////////////////////////////////////////////////
+// DRAW ARTIFACTS
+//////////////////////////////////////////////////
+
+function drawArtifacts(){
+
+    for(const a of artifacts){
+
+        ctx.fillStyle="orange";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            a.x,
+            a.y,
+            a.radius,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+
+}
+//////////////////////////////////////////////////
+// HELPERS
 //////////////////////////////////////////////////
 
 function rotatePoint(x,y,a){
+
     return {
+
         x:x*Math.cos(a)-y*Math.sin(a),
         y:x*Math.sin(a)+y*Math.cos(a)
+
     };
+
 }
 
 function worldToRobot(wx,wy){
-    const dx = wx-robot.x;
-    const dy = wy-robot.y;
+
+    const dx = wx - robot.x;
+    const dy = wy - robot.y;
 
     const c = Math.cos(-robot.heading);
     const s = Math.sin(-robot.heading);
 
     return {
-        x: dx*c - dy*s,
-        y: dx*s + dy*c
+
+        x:dx*c - dy*s,
+        y:dx*s + dy*c
+
     };
-}
 
-function pointInsideRobot(wx,wy){
-
-    const p = worldToRobot(wx,wy);
-
-    return (
-        p.x > -robot.width/2 &&
-        p.x < robot.width/2 &&
-        p.y > -robot.height/2 &&
-        p.y < robot.height/2
-    );
 }
 
 //////////////////////////////////////////////////
-// Rapid Fire
+// INTAKE TOGGLE
 //////////////////////////////////////////////////
 
-let inventory = 0;
+window.addEventListener("keydown",e=>{
 
-function rapidFire(){
+    if(e.code==="Space"){
 
-    if(inventory <= 0) return;
+        robot.intakeOn =
+            !robot.intakeOn;
 
-    let shots = Math.min(3, inventory);
+    }
+
+});
+
+//////////////////////////////////////////////////
+// BURST FIRE
+//////////////////////////////////////////////////
+
+let burstBusy = false;
+
+function fireOne(){
+
+    if(robot.inventory <= 0)
+        return;
+
+    robot.inventory--;
+
+    const muzzle =
+        rotatePoint(
+            robot.width/2 + 30,
+            0,
+            robot.heading
+        );
+
+    artifacts.push({
+
+        x:robot.x + muzzle.x,
+        y:robot.y + muzzle.y,
+
+        vx:Math.cos(robot.heading)*700,
+        vy:Math.sin(robot.heading)*700,
+
+        radius:10,
+
+        fired:true
+
+    });
+
+}
+
+function burstFire(){
+
+    if(burstBusy)
+        return;
+
+    if(robot.inventory <= 0)
+        return;
+
+    burstBusy = true;
+
+    const shots =
+        Math.min(
+            3,
+            robot.inventory
+        );
 
     for(let i=0;i<shots;i++){
 
         setTimeout(()=>{
 
-            if(inventory<=0) return;
+            fireOne();
 
-            inventory--;
+        },i*167);
 
-            const muzzle = rotatePoint(
-                robot.width/2 + 20,
-                0,
-                robot.heading
-            );
-
-            artifacts.push({
-                x: robot.x + muzzle.x,
-                y: robot.y + muzzle.y,
-                vx: Math.cos(robot.heading)*500,
-                vy: Math.sin(robot.heading)*500,
-                r:12,
-                held:false
-            });
-
-        }, i*500);
     }
+
+    setTimeout(()=>{
+
+        burstBusy=false;
+
+    },500);
+
+}
+
+window.addEventListener("keydown",e=>{
+
+    if(e.key.toLowerCase()==="f"){
+
+        burstFire();
+
+    }
+
+});
+
+//////////////////////////////////////////////////
+// UPDATE ROBOT
+//////////////////////////////////////////////////
+
+function updateRobot(dt){
+
+    let mx=0;
+    let my=0;
+
+    if(keys["w"]) my-=1;
+    if(keys["s"]) my+=1;
+    if(keys["a"]) mx-=1;
+    if(keys["d"]) mx+=1;
+
+    const mag =
+        Math.hypot(mx,my);
+
+    if(mag>0){
+
+        mx/=mag;
+        my/=mag;
+
+    }
+
+    const speed = 280;
+
+    robot.x += mx*speed*dt;
+    robot.y += my*speed*dt;
+
+    if(keys["j"])
+        robot.heading -= 2.8*dt;
+
+    if(keys["l"])
+        robot.heading += 2.8*dt;
+
+    robot.x =
+        Math.max(
+            robot.width/2,
+            Math.min(
+                FIELD_W-robot.width/2,
+                robot.x
+            )
+        );
+
+    robot.y =
+        Math.max(
+            robot.height/2,
+            Math.min(
+                FIELD_H-robot.height/2,
+                robot.y
+            )
+        );
+
 }
 
 //////////////////////////////////////////////////
-// Update
+// UPDATE ARTIFACTS
 //////////////////////////////////////////////////
 
-let last = performance.now();
+function updateArtifacts(dt){
 
-function update(dt){
+    for(let i=artifacts.length-1;i>=0;i--){
 
-    //////////////////////////////////////////////////
-    // FIELD-CENTRIC TRANSLATION
-    //////////////////////////////////////////////////
-
-    let fieldX = 0;
-    let fieldY = 0;
-
-    if(keys["w"]) fieldY -= 1;
-    if(keys["s"]) fieldY += 1;
-    if(keys["a"]) fieldX -= 1;
-    if(keys["d"]) fieldX += 1;
-
-    let len = Math.hypot(fieldX,fieldY);
-    if(len>0){
-        fieldX/=len;
-        fieldY/=len;
-    }
-
-    const driveSpeed = 250;
-
-    robot.x += fieldX*driveSpeed*dt;
-    robot.y += fieldY*driveSpeed*dt;
-
-    //////////////////////////////////////////////////
-    // TURNING
-    //////////////////////////////////////////////////
-
-    const turnSpeed = 2.5;
-
-    if(keys["j"]) robot.heading -= turnSpeed*dt;
-    if(keys["l"]) robot.heading += turnSpeed*dt;
-
-    //////////////////////////////////////////////////
-    // ARTIFACT PHYSICS
-    //////////////////////////////////////////////////
-
-    for(const a of artifacts){
+        const a = artifacts[i];
 
         a.x += a.vx*dt;
         a.y += a.vy*dt;
@@ -227,207 +573,283 @@ function update(dt){
         a.vy *= 0.99;
 
         //////////////////////////////////////////////////
+        // GOAL SCORING
+        //////////////////////////////////////////////////
+
+        if(a.fired){
+
+            for(const goal of goals){
+
+                if(
+                    a.x > goal.x &&
+                    a.x < goal.x+goal.w &&
+                    a.y > goal.y &&
+                    a.y < goal.y+goal.h
+                ){
+
+                    if(goal.color==="blue")
+                        robot.blueScore++;
+
+                    if(goal.color==="red")
+                        robot.redScore++;
+
+                    artifacts.splice(i,1);
+
+                    continue;
+                }
+
+            }
+
+        }
+
+        //////////////////////////////////////////////////
         // ROBOT COLLISION
         //////////////////////////////////////////////////
 
-        const p = worldToRobot(a.x,a.y);
-
-        const hw = robot.width/2;
-        const hh = robot.height/2;
-
-        const overlapX = hw + a.r - Math.abs(p.x);
-        const overlapY = hh + a.r - Math.abs(p.y);
-
-        if(overlapX > 0 && overlapY > 0){
-
-            if(overlapX < overlapY){
-
-                p.x += Math.sign(p.x)*overlapX;
-
-            }else{
-
-                p.y += Math.sign(p.y)*overlapY;
-            }
-
-            const corrected = rotatePoint(
-                p.x,
-                p.y,
-                robot.heading
+        const local =
+            worldToRobot(
+                a.x,
+                a.y
             );
 
-            a.x = robot.x + corrected.x;
-            a.y = robot.y + corrected.y;
+        const hw =
+            robot.width/2 +
+            a.radius;
+
+        const hh =
+            robot.height/2 +
+            a.radius;
+
+        if(
+            Math.abs(local.x)<hw &&
+            Math.abs(local.y)<hh
+        ){
+
+            const ox =
+                hw -
+                Math.abs(local.x);
+
+            const oy =
+                hh -
+                Math.abs(local.y);
+
+            if(ox<oy){
+
+                local.x +=
+                    Math.sign(local.x)
+                    * ox;
+
+            }
+            else{
+
+                local.y +=
+                    Math.sign(local.y)
+                    * oy;
+
+            }
+
+            const world =
+                rotatePoint(
+                    local.x,
+                    local.y,
+                    robot.heading
+                );
+
+            a.x =
+                robot.x +
+                world.x;
+
+            a.y =
+                robot.y +
+                world.y;
+
         }
+
     }
 
-    //////////////////////////////////////////////////
-    // INTAKE
-    //////////////////////////////////////////////////
+}
 
-    if(intakeOn){
+//////////////////////////////////////////////////
+// INTAKE SYSTEM
+//////////////////////////////////////////////////
 
-        const intakeOffset = rotatePoint(
+function updateIntake(){
+
+    if(!robot.intakeOn)
+        return;
+
+    if(robot.inventory>=3)
+        return;
+
+    const intake =
+        rotatePoint(
             robot.width/2 + 10,
             0,
             robot.heading
         );
 
-        const intakeX = robot.x + intakeOffset.x;
-        const intakeY = robot.y + intakeOffset.y;
+    const ix =
+        robot.x + intake.x;
 
-        for(let i=artifacts.length-1;i>=0;i--){
+    const iy =
+        robot.y + intake.y;
 
-            const a = artifacts[i];
+    for(let i=artifacts.length-1;i>=0;i--){
 
-            const d = Math.hypot(
-                a.x-intakeX,
-                a.y-intakeY
+        const a = artifacts[i];
+
+        if(a.fired)
+            continue;
+
+        const d =
+            Math.hypot(
+                a.x-ix,
+                a.y-iy
             );
 
-            // Must physically touch intake
-            if(d < 18){
+        if(d<18){
 
-                // Ensure artifact is actually
-                // in front of robot, not through it
+            const local =
+                worldToRobot(
+                    a.x,
+                    a.y
+                );
 
-                const local = worldToRobot(a.x,a.y);
+            if(
+                local.x >
+                robot.width/2 - 6
+            ){
 
-                if(local.x > robot.width/2 - 5){
+                artifacts.splice(i,1);
 
-                    artifacts.splice(i,1);
-                    inventory++;
-                }
+                robot.inventory++;
+
+                if(robot.inventory>=3)
+                    break;
+
             }
+
         }
+
     }
+
 }
 
 //////////////////////////////////////////////////
-// Draw
+// CAMERA
 //////////////////////////////////////////////////
 
-function drawField(){
+function updateCamera(){
 
-    ctx.strokeStyle = "#333";
+    camera.x =
+        robot.x -
+        canvas.width/2;
 
-    for(let x=0;x<2000;x+=50){
-        ctx.beginPath();
-        ctx.moveTo(x,0);
-        ctx.lineTo(x,2000);
-        ctx.stroke();
-    }
+    camera.y =
+        robot.y -
+        canvas.height/2;
 
-    for(let y=0;y<2000;y+=50){
-        ctx.beginPath();
-        ctx.moveTo(0,y);
-        ctx.lineTo(2000,y);
-        ctx.stroke();
-    }
 }
 
-function draw(){
+//////////////////////////////////////////////////
+// DRAW HUD
+//////////////////////////////////////////////////
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+function drawHUD(){
+
+    ctx.setTransform(
+        1,0,0,1,0,0
+    );
+
+    ctx.fillStyle="white";
+    ctx.font="18px Arial";
+
+    ctx.fillText(
+        "Inventory: "
+        + robot.inventory,
+        20,
+        120
+    );
+
+    ctx.fillText(
+        "Blue Score: "
+        + robot.blueScore,
+        20,
+        145
+    );
+
+    ctx.fillText(
+        "Red Score: "
+        + robot.redScore,
+        20,
+        170
+    );
+
+    ctx.fillText(
+        "Intake: "
+        + (robot.intakeOn
+            ? "ON"
+            : "OFF"),
+        20,
+        195
+    );
+
+}
+
+//////////////////////////////////////////////////
+// MAIN LOOP
+//////////////////////////////////////////////////
+
+let last =
+    performance.now();
+
+function loop(now){
+
+    const dt =
+        Math.min(
+            (now-last)/1000,
+            0.03
+        );
+
+    last = now;
+
+    updateRobot(dt);
+    updateArtifacts(dt);
+    updateIntake();
+    updateCamera();
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
     ctx.save();
 
     ctx.translate(
-        canvas.width/2 - robot.x,
-        canvas.height/2 - robot.y
+        -camera.x,
+        -camera.y
     );
 
     drawField();
-
-    //////////////////////////////////////////////////
-    // Intake
-    //////////////////////////////////////////////////
-
-    const intakePos = rotatePoint(
-        robot.width/2 + 10,
-        0,
-        robot.heading
-    );
-
-    ctx.fillStyle = intakeOn ? "lime" : "red";
-
-    ctx.beginPath();
-    ctx.arc(
-        robot.x + intakePos.x,
-        robot.y + intakePos.y,
-        10,
-        0,
-        Math.PI*2
-    );
-    ctx.fill();
-
-    //////////////////////////////////////////////////
-    // Artifacts
-    //////////////////////////////////////////////////
-
-    for(const a of artifacts){
-
-        ctx.fillStyle = "orange";
-
-        ctx.beginPath();
-        ctx.arc(a.x,a.y,a.r,0,Math.PI*2);
-        ctx.fill();
-    }
-
-    //////////////////////////////////////////////////
-    // Robot
-    //////////////////////////////////////////////////
-
-    ctx.save();
-
-    ctx.translate(robot.x,robot.y);
-    ctx.rotate(robot.heading);
-
-    ctx.fillStyle = "#3fa9f5";
-    ctx.fillRect(
-        -robot.width/2,
-        -robot.height/2,
-        robot.width,
-        robot.height
-    );
-
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 3;
-
-    ctx.beginPath();
-    ctx.moveTo(0,0);
-    ctx.lineTo(robot.width/2,0);
-    ctx.stroke();
+    drawArtifacts();
+    drawRobot();
 
     ctx.restore();
 
-    ctx.restore();
+    drawHUD();
 
-    ctx.fillStyle = "white";
-    ctx.fillText("Inventory: "+inventory,10,120);
-    ctx.fillText("Intake: "+(intakeOn?"ON":"OFF"),10,140);
-}
-
-//////////////////////////////////////////////////
-// Main Loop
-//////////////////////////////////////////////////
-
-function loop(now){
-
-    const dt = Math.min(
-        (now-last)/1000,
-        0.03
+    requestAnimationFrame(
+        loop
     );
 
-    last = now;
-
-    update(dt);
-    draw();
-
-    requestAnimationFrame(loop);
 }
 
-requestAnimationFrame(loop);
+requestAnimationFrame(
+    loop
+);
+
 </script>
-
 </body>
 </html>
