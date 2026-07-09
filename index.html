@@ -209,7 +209,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             cursor: pointer;
             font-weight: 500;
             font-size: 0.95rem;
@@ -218,6 +218,27 @@
             width: 18px;
             height: 18px;
             accent-color: var(--primary);
+        }
+
+        /* Quality Metrics Display Panel */
+        .qc-score-panel {
+            background-color: #f1f8ff;
+            border: 1px dashed var(--primary-light);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .qc-score-num {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .qc-score-desc {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #444;
+            margin-top: 4px;
         }
 
         /* Sliders */
@@ -339,11 +360,17 @@
                             <label class="radio-tile"><input type="radio" name="pitStart" value="Close">Close</label>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="pitAttempted">Target Artifacts Attempted per Match</label>
-                        <input type="number" id="pitAttempted" min="0" value="0">
+                    
+                    <div class="counter-container">
+                        <span class="counter-label">Target Artifacts Attempted (Auto)</span>
+                        <div class="counter-controls">
+                            <button type="button" class="btn-counter" onclick="changePitAttempted(-1)">-</button>
+                            <span id="pitAttempted-val" class="counter-value">0</span>
+                            <button type="button" class="btn-counter" onclick="changePitAttempted(1)">+</button>
+                        </div>
                     </div>
-                    <div class="form-group">
+
+                    <div class="form-group" style="margin-top: 10px;">
                         <label>Do they actively prioritize sorting?</label>
                         <div class="radio-tile-group">
                             <label class="radio-tile"><input type="radio" name="pitSortingStrategy" value="Yes" checked>Yes</label>
@@ -354,12 +381,18 @@
 
                 <div class="section">
                     <h2>Robot Quality Checklist</h2>
-                    <label class="check-item"><input type="checkbox" id="qc_parts"> All structural parts fully secure</label>
-                    <label class="check-item"><input type="checkbox" id="qc_wires"> All wiring managed, zip-tied & secure</label>
-                    <label class="check-item"><input type="checkbox" id="qc_sizing"> Clearly fits within baseline sizing constraints</label>
-                    <label class="check-item"><input type="checkbox" id="qc_durability"> Highly durable construction (unlikely to break)</label>
-                    <label class="check-item"><input type="checkbox" id="qc_clearance"> Good ground clearance / clean component protection</label>
+                    <label class="check-item"><input type="checkbox" id="qc_parts" onchange="calculateQCScore()"> All structural parts fully secure</label>
+                    <label class="check-item"><input type="checkbox" id="qc_wires" onchange="calculateQCScore()"> All wiring managed, zip-tied & secure</label>
+                    <label class="check-item"><input type="checkbox" id="qc_sizing" onchange="calculateQCScore()"> Clearly fits within baseline sizing constraints</label>
+                    <label class="check-item"><input type="checkbox" id="qc_durability" onchange="calculateQCScore()"> Highly durable construction (unlikely to break)</label>
+                    <label class="check-item"><input type="checkbox" id="qc_clearance" onchange="calculateQCScore()"> Good ground clearance / clean component protection</label>
+                    <label class="check-item"><input type="checkbox" id="qc_confidence" onchange="calculateQCScore()"> Team displays high operational confidence & preparedness</label>
                     
+                    <div class="qc-score-panel">
+                        <div class="qc-score-num">Quality Index: <span id="qc_score_disp">0/6</span></div>
+                        <div class="qc-score-desc" id="qc_desc_disp">Critical structural or operational issues.</div>
+                    </div>
+
                     <div class="form-group" style="margin-top: 15px;">
                         <label for="pitNotes">General Build & Team Observations</label>
                         <textarea id="pitNotes" rows="3" placeholder="Build quality, software confidence, general notes..."></textarea>
@@ -569,12 +602,20 @@
             teleAttempted: 0, teleMade: 0, teleSorted: 0
         };
 
+        let pitAutoAttempted = 0;
+
         function switchTab(tabId, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             el.classList.add('active');
             window.scrollTo(0,0);
+        }
+
+        // Pit auto checker increments
+        function changePitAttempted(step) {
+            pitAutoAttempted = Math.max(0, pitAutoAttempted + step);
+            document.getElementById('pitAttempted-val').innerText = pitAutoAttempted;
         }
 
         // Logic validation: successful items cannot outpace general attempt markers
@@ -601,6 +642,27 @@
             document.getElementById(`${key}-val`).innerText = matchCounts[key];
         }
 
+        // Live QC Evaluation Strategy Engine
+        function calculateQCScore() {
+            const boxes = ['qc_parts', 'qc_wires', 'qc_sizing', 'qc_durability', 'qc_clearance', 'qc_confidence'];
+            let score = 0;
+            boxes.forEach(id => { if(document.getElementById(id).checked) score++; });
+            
+            document.getElementById('qc_score_disp').innerText = `${score}/6`;
+            
+            let description = "";
+            switch(score) {
+                case 6: description = "6/6: Robot is of excellent quality and team is confident."; break;
+                case 5: description = "5/6: High tier construction and team preparedness."; break;
+                case 4: description = "4/6: Solid mid-tier build; minor structural/wiring optimizations needed."; break;
+                case 3: description = "3/6: Moderate assembly validation required; team has performance doubts."; break;
+                case 2: description = "2/6: Visible structural risks or loose wiring setups."; break;
+                case 1: case 0: description = "Critical structural or operational issues present."; break;
+            }
+            document.getElementById('qc_desc_disp').innerText = description;
+            return { score, description };
+        }
+
         function updateSliderDisp(id) {
             document.getElementById(`${id}-disp`).innerText = document.getElementById(id).value;
         }
@@ -613,8 +675,8 @@
         }
 
         function refreshCounters() {
-            const matches = JSON.parse(localStorage.getItem('aether_matches') || '[]');
-            const pits = JSON.parse(localStorage.getItem('aether_pits') || '[]');
+            const matches = JSON.parse(localStorage.getItem('aether_matches_v3') || '[]');
+            const pits = JSON.parse(localStorage.getItem('aether_pits_v3') || '[]');
             document.getElementById('matchCountDisp').innerText = `${matches.length} profile(s) logged.`;
             document.getElementById('pitCountDisp').innerText = `${pits.length} team profile(s) logged.`;
         }
@@ -648,9 +710,9 @@
                 notes: document.getElementById('matchNotes').value.replace(/,/g, ';').replace(/\n/g, ' ')
             };
 
-            const db = JSON.parse(localStorage.getItem('aether_matches') || '[]');
+            const db = JSON.parse(localStorage.getItem('aether_matches_v3') || '[]');
             db.push(entry);
-            localStorage.setItem('aether_matches', JSON.stringify(db));
+            localStorage.setItem('aether_matches_v3', JSON.stringify(db));
 
             alert('Match profile compiled!');
             
@@ -668,6 +730,8 @@
 
         document.getElementById('pitForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            const qcMetrics = calculateQCScore();
+
             const entry = {
                 pitScoutName: document.getElementById('pitScoutName').value,
                 pitTeamNum: document.getElementById('pitTeamNum').value,
@@ -679,29 +743,29 @@
                 parkingMech: document.querySelector('input[name="parkingMech"]:checked').value,
                 pitTeamInputNotes: document.getElementById('pitTeamInputNotes').value.replace(/,/g, ';').replace(/\n/g, ' '),
                 pitStart: document.querySelector('input[name="pitStart"]:checked').value,
-                pitAttempted: document.getElementById('pitAttempted').value,
+                pitAutoAttempted: pitAutoAttempted,
                 pitSortingStrategy: document.querySelector('input[name="pitSortingStrategy"]:checked').value,
-                qc_parts: document.getElementById('qc_parts').checked ? "Pass" : "Fail",
-                qc_wires: document.getElementById('qc_wires').checked ? "Pass" : "Fail",
-                qc_sizing: document.getElementById('qc_sizing').checked ? "Pass" : "Fail",
-                qc_durability: document.getElementById('qc_durability').checked ? "Pass" : "Fail",
-                qc_clearance: document.getElementById('qc_clearance').checked ? "Pass" : "Fail",
+                qualityScoreNum: qcMetrics.score,
+                qualityDescription: qcMetrics.description,
                 pitNotes: document.getElementById('pitNotes').value.replace(/,/g, ';').replace(/\n/g, ' ')
             };
 
-            const db = JSON.parse(localStorage.getItem('aether_pits') || '[]');
+            const db = JSON.parse(localStorage.getItem('aether_pits_v3') || '[]');
             db.push(entry);
-            localStorage.setItem('aether_pits', JSON.stringify(db));
+            localStorage.setItem('aether_pits_v3', JSON.stringify(db));
 
             alert('Pit Profile committed successfully!');
             const currentScout = document.getElementById('pitScoutName').value;
             document.getElementById('pitForm').reset();
             document.getElementById('pitScoutName').value = currentScout;
+            pitAutoAttempted = 0;
+            document.getElementById('pitAttempted-val').innerText = 0;
+            calculateQCScore();
             refreshCounters();
         });
 
         function exportCSV(type) {
-            const storeKey = type === 'match' ? 'aether_matches' : 'aether_pits';
+            const storeKey = type === 'match' ? 'aether_matches_v3' : 'aether_pits_v3';
             const data = JSON.parse(localStorage.getItem(storeKey) || '[]');
             if(!data.length) return alert('No elements found to construct CSV.');
 
@@ -721,7 +785,7 @@
         }
 
         function clearData(type) {
-            const storeKey = type === 'match' ? 'aether_matches' : 'aether_pits';
+            const storeKey = type === 'match' ? 'aether_matches_v3' : 'aether_pits_v3';
             if(confirm(`Erase the total local baseline ${type} registry?`)) {
                 localStorage.removeItem(storeKey);
                 refreshCounters();
