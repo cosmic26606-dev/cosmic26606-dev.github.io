@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FTC DECODE Scout (2025-2026)</title>
+    <title>FTC DECODE Scout (Updated)</title>
     <style>
         :root {
-            --primary: #4a148c;
-            --primary-light: #7c43bd;
+            --primary: #311b92;
+            --primary-light: #673ab7;
             --accent: #00e676;
             --dark: #212121;
-            --light: #f5f5f5;
+            --light: #f8f9fa;
             --red-alliance: #d32f2f;
             --blue-alliance: #1976d2;
         }
@@ -25,7 +25,7 @@
         body {
             background-color: var(--light);
             color: var(--dark);
-            padding-bottom: 60px;
+            padding-bottom: 40px;
         }
 
         header {
@@ -38,14 +38,8 @@
         }
 
         header h1 {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             letter-spacing: 1px;
-        }
-
-        header p {
-            font-size: 0.8rem;
-            opacity: 0.8;
-            margin-top: 2px;
         }
 
         .container {
@@ -79,7 +73,7 @@
         label {
             display: block;
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             font-size: 0.9rem;
         }
 
@@ -121,36 +115,37 @@
             border-color: var(--blue-alliance);
         }
 
-        /* Counter Styling */
+        /* Metric Counters */
         .counter-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #fcfcfc;
+            background: #fdfdfd;
             padding: 10px;
             border-radius: 6px;
-            border: 1px solid #eee;
+            border: 1px solid #eaeaea;
             margin-bottom: 10px;
         }
 
         .counter-label {
             font-weight: 500;
+            font-size: 0.95rem;
         }
 
         .counter-controls {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
 
         .btn-counter {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             border: none;
             background-color: var(--primary);
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: bold;
             cursor: pointer;
             display: flex;
@@ -159,28 +154,23 @@
             user-select: none;
         }
 
-        .btn-counter:active {
-            background-color: var(--primary-light);
-        }
-
         .counter-value {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: bold;
-            min-width: 30px;
+            min-width: 28px;
             text-align: center;
         }
 
-        /* Radio Blocks */
+        /* Segmented Button Selection (Radios) */
         .radio-tile-group {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
         .radio-tile {
             flex: 1;
             position: relative;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             border: 2px solid #ccc;
@@ -190,6 +180,7 @@
             font-weight: 500;
             background: white;
             text-align: center;
+            font-size: 0.9rem;
         }
 
         .radio-tile input {
@@ -203,7 +194,26 @@
             color: var(--primary);
         }
 
-        /* Action Buttons */
+        /* Slider Display Adjustments */
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .slider-container input[type="range"] {
+            flex: 1;
+            accent-color: var(--primary);
+        }
+
+        .slider-val {
+            font-weight: bold;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Global Footer/Actions */
         .btn-submit {
             width: 100%;
             padding: 15px;
@@ -215,10 +225,6 @@
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .btn-submit:active {
-            opacity: 0.9;
         }
 
         .export-section {
@@ -250,17 +256,17 @@
 <body>
 
     <header>
-        <h1>DECODE™ Scouting App</h1>
-        <p>FTC 2025-2026 Season</p>
+        <h1>DECODE™ Scouting Matrix</h1>
     </header>
 
     <div class="container">
         <form id="scoutingForm">
             
+            <!-- Metadata Section -->
             <div class="section">
                 <h2>Match Info</h2>
                 <div class="form-group">
-                    <label for="scoutName">Scout Name</label>
+                    <label for="scoutName">Scouter Name</label>
                     <input type="text" id="scoutName" required placeholder="Your Name">
                 </div>
                 <div style="display: flex; gap: 10px;">
@@ -283,131 +289,174 @@
                 </div>
             </div>
 
+            <!-- Autonomous Section -->
             <div class="section">
                 <h2>Autonomous</h2>
                 <div class="form-group">
-                    <label>Pre-loaded Artifact?</label>
+                    <label>Preload Artifacts?</label>
                     <div class="radio-tile-group">
-                        <label class="radio-tile">
-                            <input type="radio" name="preload" value="Yes"> Yes
-                        </label>
-                        <label class="radio-tile">
-                            <input type="radio" name="preload" value="No" checked> No
-                        </label>
+                        <label class="radio-tile"><input type="radio" name="autoPreload" value="Yes">Yes</label>
+                        <label class="radio-tile"><input type="radio" name="autoPreload" value="No" checked>No</label>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Auto Navigation/Parking</label>
+                    <label>Field Side</label>
                     <div class="radio-tile-group">
-                        <label class="radio-tile">
-                            <input type="radio" name="autoNav" value="None" checked> None
-                        </label>
-                        <label class="radio-tile">
-                            <input type="radio" name="autoNav" value="Parked"> Parked
-                        </label>
+                        <label class="radio-tile"><input type="radio" name="autoSide" value="Far" checked>Far Side</label>
+                        <label class="radio-tile"><input type="radio" name="autoSide" value="Close">Close Side</label>
+                    </div>
+                </div>
+                
+                <!-- Counters -->
+                <div class="counter-container">
+                    <span class="counter-label">Attempted Artifacts</span>
+                    <div class="counter-controls">
+                        <button type="button" class="btn-counter" onclick="changeVal('autoAttempted', -1)">-</button>
+                        <span id="autoAttempted-val" class="counter-value">0</span>
+                        <button type="button" class="btn-counter" onclick="changeVal('autoAttempted', 1)">+</button>
                     </div>
                 </div>
                 <div class="counter-container">
-                    <span class="counter-label">Artifacts Scored in Auto</span>
+                    <span class="counter-label">Made Artifacts</span>
                     <div class="counter-controls">
-                        <button type="button" class="btn-counter" onclick="changeVal('autoArtifacts', -1)">-</button>
-                        <span id="autoArtifacts-val" class="counter-value">0</span>
-                        <button type="button" class="btn-counter" onclick="changeVal('autoArtifacts', 1)">+</button>
+                        <button type="button" class="btn-counter" onclick="changeVal('autoMade', -1)">-</button>
+                        <span id="autoMade-val" class="counter-value">0</span>
+                        <button type="button" class="btn-counter" onclick="changeVal('autoMade', 1)">+</button>
+                    </div>
+                </div>
+                <div class="counter-container">
+                    <span class="counter-label">Sorted Artifacts</span>
+                    <div class="counter-controls">
+                        <button type="button" class="btn-counter" onclick="changeVal('autoSorted', -1)">-</button>
+                        <span id="autoSorted-val" class="counter-value">0</span>
+                        <button type="button" class="btn-counter" onclick="changeVal('autoSorted', 1)">+</button>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 10px;">
+                    <label>Leave?</label>
+                    <div class="radio-tile-group">
+                        <label class="radio-tile"><input type="radio" name="autoLeave" value="Yes">Yes</label>
+                        <label class="radio-tile"><input type="radio" name="autoLeave" value="No" checked>No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Collaboration with Partner (1-5)</label>
+                    <div class="slider-container">
+                        <input type="range" id="autoCollab" min="1" max="5" value="1" oninput="updateSliderDisp('autoCollab')">
+                        <span id="autoCollab-disp" class="slider-val">1</span>
                     </div>
                 </div>
             </div>
 
+            <!-- TeleOp Section -->
             <div class="section">
-                <h2>TeleOperated</h2>
+                <h2>TeleOp</h2>
+                <div class="form-group">
+                    <label>Main Operational Field Side</label>
+                    <div class="radio-tile-group">
+                        <label class="radio-tile"><input type="radio" name="teleSide" value="Far" checked>Far Side</label>
+                        <label class="radio-tile"><input type="radio" name="teleSide" value="Close">Close Side</label>
+                        <label class="radio-tile"><input type="radio" name="teleSide" value="Both">Both Sides</label>
+                    </div>
+                </div>
+
+                <!-- Counters -->
                 <div class="counter-container">
-                    <span class="counter-label">Classified Artifacts</span>
+                    <span class="counter-label">Attempted Artifacts</span>
                     <div class="counter-controls">
-                        <button type="button" class="btn-counter" onclick="changeVal('teleClassified', -1)">-</button>
-                        <span id="teleClassified-val" class="counter-value">0</span>
-                        <button type="button" class="btn-counter" onclick="changeVal('teleClassified', 1)">+</button>
+                        <button type="button" class="btn-counter" onclick="changeVal('teleAttempted', -1)">-</button>
+                        <span id="teleAttempted-val" class="counter-value">0</span>
+                        <button type="button" class="btn-counter" onclick="changeVal('teleAttempted', 1)">+</button>
                     </div>
                 </div>
                 <div class="counter-container">
-                    <span class="counter-label">Overflow Artifacts</span>
+                    <span class="counter-label">Made Artifacts</span>
                     <div class="counter-controls">
-                        <button type="button" class="btn-counter" onclick="changeVal('teleOverflow', -1)">-</button>
-                        <span id="teleOverflow-val" class="counter-value">0</span>
-                        <button type="button" class="btn-counter" onclick="changeVal('teleOverflow', 1)">+</button>
+                        <button type="button" class="btn-counter" onclick="changeVal('teleMade', -1)">-</button>
+                        <span id="teleMade-val" class="counter-value">0</span>
+                        <button type="button" class="btn-counter" onclick="changeVal('teleMade', 1)">+</button>
                     </div>
                 </div>
                 <div class="counter-container">
-                    <span class="counter-label">Motif Patterns Formed</span>
+                    <span class="counter-label">Sorted Artifacts</span>
                     <div class="counter-controls">
-                        <button type="button" class="btn-counter" onclick="changeVal('teleMotifs', -1)">-</button>
-                        <span id="teleMotifs-val" class="counter-value">0</span>
-                        <button type="button" class="btn-counter" onclick="changeVal('teleMotifs', 1)">+</button>
+                        <button type="button" class="btn-counter" onclick="changeVal('teleSorted', -1)">-</button>
+                        <span id="teleSorted-val" class="counter-value">0</span>
+                        <button type="button" class="btn-counter" onclick="changeVal('teleSorted', 1)">+</button>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 10px;">
+                    <label>Collaboration with Partner (1-5)</label>
+                    <div class="slider-container">
+                        <input type="range" id="teleCollab" min="1" max="5" value="1" oninput="updateSliderDisp('teleCollab')">
+                        <span id="teleCollab-disp" class="slider-val">1</span>
                     </div>
                 </div>
             </div>
 
+            <!-- Endgame Section -->
             <div class="section">
-                <h2>End Game</h2>
+                <h2>Endgame</h2>
                 <div class="form-group">
-                    <label>Base Navigation / Parking</label>
+                    <label>Park Status</label>
                     <div class="radio-tile-group">
-                        <label class="radio-tile">
-                            <input type="radio" name="endPark" value="None" checked> None
-                        </label>
-                        <label class="radio-tile">
-                            <input type="radio" name="endPark" value="Partial"> Partial
-                        </label>
-                        <label class="radio-tile">
-                            <input type="radio" name="endPark" value="Full"> Full
-                        </label>
+                        <label class="radio-tile"><input type="radio" name="endPark" value="None" checked>None</label>
+                        <label class="radio-tile"><input type="radio" name="endPark" value="Partial">Partial</label>
+                        <label class="radio-tile"><input type="radio" name="endPark" value="Full">Full</label>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Expanded in Height?</label>
+                    <label>Stable Lift?</label>
                     <div class="radio-tile-group">
-                        <label class="radio-tile">
-                            <input type="radio" name="heightExpand" value="Yes"> Yes
-                        </label>
-                        <label class="radio-tile">
-                            <input type="radio" name="heightExpand" value="No" checked> No
-                        </label>
+                        <label class="radio-tile"><input type="radio" name="endLift" value="Yes">Yes</label>
+                        <label class="radio-tile"><input type="radio" name="endLift" value="No" checked>No</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Collaboration with Partner (1-5)</label>
+                    <div class="slider-container">
+                        <input type="range" id="endCollab" min="1" max="5" value="1" oninput="updateSliderDisp('endCollab')">
+                        <span id="endCollab-disp" class="slider-val">1</span>
                     </div>
                 </div>
             </div>
 
+            <!-- Post-Match Notes Section -->
             <div class="section">
                 <h2>Post-Match Notes</h2>
                 <div class="form-group">
-                    <label for="driverSkill">Driver Capability</label>
-                    <select id="driverSkill">
-                        <option value="Average">Average</option>
-                        <option value="Excellent">Excellent / Fast</option>
-                        <option value="Struggled">Struggled / Inefficient</option>
-                    </select>
+                    <label>Driver Capability (1-5)</label>
+                    <div class="slider-container">
+                        <input type="range" id="driverSkill" min="1" max="5" value="3" oninput="updateSliderDisp('driverSkill')">
+                        <span id="driverSkill-disp" class="slider-val">3</span>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="notes">Behavior / Breakdowns / General Notes</label>
-                    <textarea id="notes" rows="3" placeholder="E.g., intake broke halfway through, great defense, fast motif sorting..."></textarea>
+                    <label for="notes">Behavior Notes / Issues</label>
+                    <textarea id="notes" rows="3" placeholder="E.g., Connection issues, swift alignment, hardware failure..."></textarea>
                 </div>
             </div>
 
-            <button type="submit" class="btn-submit">Save Match Data</button>
+            <button type="submit" class="btn-submit">Save Match Entry</button>
         </form>
 
+        <!-- Data Admin Controls -->
         <div class="section export-section">
             <h2>Data Management</h2>
             <div class="history-count" id="historyCount">0 matches saved locally.</div>
-            <button class="btn-secondary" onclick="exportToCSV()">Export All to CSV</button>
+            <button class="btn-secondary" onclick="exportToCSV()">Export Dataset to CSV</button>
             <button class="btn-secondary" style="background-color: #c62828;" onclick="clearStorage()">Clear Local Data</button>
         </div>
     </div>
 
     <script>
-        // App State for Counters
+        // Track numerical state safely
         const counts = {
-            autoArtifacts: 0,
-            teleClassified: 0,
-            teleOverflow: 0,
-            teleMotifs: 0
+            autoAttempted: 0, autoMade: 0, autoSorted: 0,
+            teleAttempted: 0, teleMade: 0, teleSorted: 0
         };
 
         function changeVal(key, step) {
@@ -415,29 +464,28 @@
             document.getElementById(`${key}-val`).innerText = counts[key];
         }
 
+        function updateSliderDisp(id) {
+            document.getElementById(`${id}-disp`).innerText = document.getElementById(id).value;
+        }
+
         function setAlliance(color) {
             document.getElementById('alliance').value = color;
             document.getElementById('alliance-red').classList.remove('active');
             document.getElementById('alliance-blue').classList.remove('active');
-            
-            if(color === 'Red') {
-                document.getElementById('alliance-red').classList.add('active');
-            } else {
-                document.getElementById('alliance-blue').classList.add('active');
-            }
+            document.getElementById(`alliance-${color.toLowerCase()}`).classList.add('active');
         }
 
         function updateMatchCount() {
-            const currentData = JSON.parse(localStorage.getItem('ftcDecodeData') || '[]');
+            const currentData = JSON.parse(localStorage.getItem('ftcDecodeData_v2') || '[]');
             document.getElementById('historyCount').innerText = `${currentData.length} match(es) saved locally.`;
         }
 
-        // Form Submit handling
+        // Form Submit
         document.getElementById('scoutingForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             if(!document.getElementById('alliance').value) {
-                alert('Please select an Alliance color!');
+                alert('Please pick an Alliance side!');
                 return;
             }
 
@@ -446,42 +494,54 @@
                 matchNum: document.getElementById('matchNum').value,
                 teamNum: document.getElementById('teamNum').value,
                 alliance: document.getElementById('alliance').value,
-                preload: document.querySelector('input[name="preload"]:checked').value,
-                autoNav: document.querySelector('input[name="autoNav"]:checked').value,
-                autoArtifacts: counts.autoArtifacts,
-                teleClassified: counts.teleClassified,
-                teleOverflow: counts.teleOverflow,
-                teleMotifs: counts.teleMotifs,
+                
+                autoPreload: document.querySelector('input[name="autoPreload"]:checked').value,
+                autoSide: document.querySelector('input[name="autoSide"]:checked').value,
+                autoAttempted: counts.autoAttempted,
+                autoMade: counts.autoMade,
+                autoSorted: counts.autoSorted,
+                autoLeave: document.querySelector('input[name="autoLeave"]:checked').value,
+                autoCollab: document.getElementById('autoCollab').value,
+
+                teleSide: document.querySelector('input[name="teleSide"]:checked').value,
+                teleAttempted: counts.teleAttempted,
+                teleMade: counts.teleMade,
+                teleSorted: counts.teleSorted,
+                teleCollab: document.getElementById('teleCollab').value,
+
                 endPark: document.querySelector('input[name="endPark"]:checked').value,
-                heightExpand: document.querySelector('input[name="heightExpand"]:checked').value,
+                endLift: document.querySelector('input[name="endLift"]:checked').value,
+                endCollab: document.getElementById('endCollab').value,
+
                 driverSkill: document.getElementById('driverSkill').value,
-                notes: document.getElementById('notes').value.replace(/,/g, ';') // Clean up commas for CSV safety
+                notes: document.getElementById('notes').value.replace(/,/g, ';').replace(/\n/g, ' ') 
             };
 
-            // Save to localStorage array
-            const currentData = JSON.parse(localStorage.getItem('ftcDecodeData') || '[]');
+            const currentData = JSON.parse(localStorage.getItem('ftcDecodeData_v2') || '[]');
             currentData.push(matchRecord);
-            localStorage.setItem('ftcDecodeData', JSON.stringify(currentData));
+            localStorage.setItem('ftcDecodeData_v2', JSON.stringify(currentData));
 
-            // Reset and Alert
-            alert(`Match ${matchRecord.matchNum} for Team ${matchRecord.teamNum} successfully saved!`);
+            alert(`Logged: Match ${matchRecord.matchNum} | Team ${matchRecord.teamNum}`);
             resetForm();
             updateMatchCount();
         });
 
         function resetForm() {
-            // Keep Scout Name populated to avoid retyping
-            const scout = document.getElementById('scoutName').value;
+            const preservedScout = document.getElementById('scoutName').value;
             document.getElementById('scoutingForm').reset();
-            document.getElementById('scoutName').value = scout;
+            document.getElementById('scoutName').value = preservedScout;
             
-            // Reset state counters
+            // Re-zero parameters
             for (let key in counts) {
                 counts[key] = 0;
                 document.getElementById(`${key}-val`).innerText = 0;
             }
             
-            // Reset alliance buttons
+            // Reset Range numbers
+            ['autoCollab', 'teleCollab', 'endCollab', 'driverSkill'].forEach(id => {
+                updateSliderDisp(id);
+            });
+
             document.getElementById('alliance').value = '';
             document.getElementById('alliance-red').classList.remove('active');
             document.getElementById('alliance-blue').classList.remove('active');
@@ -489,22 +549,17 @@
         }
 
         function exportToCSV() {
-            const data = JSON.parse(localStorage.getItem('ftcDecodeData') || '[]');
+            const data = JSON.parse(localStorage.getItem('ftcDecodeData_v2') || '[]');
             if(data.length === 0) {
-                alert("No match data saved to export yet!");
+                alert("Nothing compiled yet!");
                 return;
             }
 
-            // Define headers
             const headers = Object.keys(data[0]);
-            let csvRows = [];
-            csvRows.push(headers.join(','));
+            let csvRows = [headers.join(',')];
 
-            // Map variables out to rows
             for (const row of data) {
-                const values = headers.map(header => {
-                    return `"${row[header]}"`;
-                });
+                const values = headers.map(header => `"${row[header]}"`);
                 csvRows.push(values.join(','));
             }
 
@@ -512,20 +567,19 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `FTC_DECODE_ScoutingData_${Date.now()}.csv`);
+            link.setAttribute("download", `FTC_Scout_Export_${Date.now()}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
         function clearStorage() {
-            if(confirm("Are you absolutely sure you want to clear all saved matches? Make sure you have exported your data first!")) {
-                localStorage.removeItem('ftcDecodeData');
+            if(confirm("Wipe all local matches? Verify you've completed your CSV exports!")) {
+                localStorage.removeItem('ftcDecodeData_v2');
                 updateMatchCount();
             }
         }
 
-        // Initialize display count on load
         window.onload = updateMatchCount;
     </script>
 </body>
