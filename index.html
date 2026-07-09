@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS</title>
+    <title>AETHER</title>
     <style>
         :root {
-            --primary: #1a237e;
-            --primary-light: #534bae;
-            --primary-dark: #000051;
+            --primary: #0d47a1;
+            --primary-light: #29b6f6;
+            --primary-dark: #0a2540;
             --accent: #00e676;
             --dark: #212121;
-            --light: #f5f5f5;
+            --light: #f8f9fa;
             --red-alliance: #d32f2f;
             --blue-alliance: #1976d2;
         }
@@ -39,16 +39,18 @@
 
         header h1 {
             font-size: 1.8rem;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             font-weight: 800;
+            color: #ffffff;
         }
 
         header p {
             font-size: 0.85rem;
-            opacity: 0.8;
+            opacity: 0.9;
             margin-top: 4px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            color: var(--primary-light);
         }
 
         /* Tabs Navigation */
@@ -98,13 +100,13 @@
             padding: 15px;
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border-left: 5px solid var(--primary-light);
+            border-left: 5px solid var(--primary);
         }
 
         .section h2 {
             font-size: 1.1rem;
             margin-bottom: 15px;
-            color: var(--primary);
+            color: var(--primary-dark);
             text-transform: uppercase;
             border-bottom: 1px solid #eee;
             padding-bottom: 5px;
@@ -200,7 +202,23 @@
             font-size: 0.9rem;
         }
         .radio-tile input { position: absolute; opacity: 0; }
-        .radio-tile:has(input:checked) { border-color: var(--primary); background-color: #e8eaf6; color: var(--primary); }
+        .radio-tile:has(input:checked) { border-color: var(--primary); background-color: #e3f2fd; color: var(--primary-dark); }
+
+        /* Checkbox list rules */
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .check-item input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
 
         /* Sliders */
         .slider-container { display: flex; align-items: center; gap: 15px; }
@@ -229,20 +247,142 @@
 <body>
 
     <header>
-        <h1>NEXUS</h1>
+        <h1>AETHER</h1>
         <p>The Ultimate FTC Scouting Experience</p>
     </header>
 
     <div class="tab-bar">
-        <button class="tab-btn active" onclick="switchTab('matchTab', this)">Match Scouting</button>
-        <button class="tab-btn" onclick="switchTab('pitTab', this)">Pit Scouting</button>
+        <button class="tab-btn active" onclick="switchTab('pitTab', this)">Pit Scouting</button>
+        <button class="tab-btn" onclick="switchTab('matchTab', this)">Match Scouting</button>
     </div>
 
-    <div id="matchTab" class="tab-content active">
+    <div id="pitTab" class="tab-content active">
+        <div class="container">
+            <form id="pitForm">
+                <div class="section">
+                    <h2>Basic Info</h2>
+                    <div class="form-group">
+                        <label for="pitScoutName">Scouter Name</label>
+                        <input type="text" id="pitScoutName" required placeholder="Your Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="pitTeamNum">Team #</label>
+                        <input type="number" id="pitTeamNum" required min="1">
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Robot Specifications</h2>
+                    <div style="display: flex; gap: 10px;" class="form-group">
+                        <div style="flex: 1;">
+                            <label for="dimX">Width (Inches)</label>
+                            <input type="number" id="dimX" placeholder="e.g. 17.5" step="0.1">
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="dimY">Length (Inches)</label>
+                            <input type="number" id="dimY" placeholder="e.g. 17.5" step="0.1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Drivetrain Style</label>
+                        <div class="radio-tile-group">
+                            <label class="radio-tile"><input type="radio" name="drivetrain" value="Mecanum" checked>Mecanum</label>
+                            <label class="radio-tile"><input type="radio" name="drivetrain" value="Tank">Tank</label>
+                            <label class="radio-tile"><input type="radio" name="drivetrain" value="Swerve">Swerve</label>
+                            <label class="radio-tile"><input type="radio" name="drivetrain" value="Other">Other</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Intake Style</label>
+                        <div class="radio-tile-group">
+                            <label class="radio-tile"><input type="radio" name="intakeType" value="Roller" checked>Roller</label>
+                            <label class="radio-tile"><input type="radio" name="intakeType" value="Claw">Claw</label>
+                            <label class="radio-tile"><input type="radio" name="intakeType" value="Other">Other</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Launcher Style</label>
+                        <div class="radio-tile-group">
+                            <label class="radio-tile"><input type="radio" name="launcherType" value="Flywheel" checked>Flywheel</label>
+                            <label class="radio-tile"><input type="radio" name="launcherType" value="Catapult">Catapult</label>
+                            <label class="radio-tile"><input type="radio" name="launcherType" value="Other">Other</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Sorting Mechanism</label>
+                        <div class="radio-tile-group">
+                            <label class="radio-tile"><input type="radio" name="sortingMech" value="None" checked>None</label>
+                            <label class="radio-tile"><input type="radio" name="sortingMech" value="Somewhat">Somewhat</label>
+                            <label class="radio-tile"><input type="radio" name="sortingMech" value="Full">Full</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Parking / Endgame Mechanism</label>
+                        <div class="radio-tile-group">
+                            <label class="radio-tile"><input type="radio" name="parkingMech" value="None" checked>None</label>
+                            <label class="radio-tile"><input type="radio" name="parkingMech" value="Tilt">Tilt</label>
+                            <label class="radio-tile"><input type="radio" name="parkingMech" value="Lift">Lift</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="pitTeamInputNotes">Self-Reported Team Notes (Mechanism Details)</label>
+                        <textarea id="pitTeamInputNotes" rows="2" placeholder="What the team says about their mechanisms..."></textarea>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Robot Strategy (Stated Capabilities)</h2>
+                    <div class="form-group">
+                        <label>Preferred Starting Spot</label>
+                        <div class="radio-tile-group">
+                            <label class="radio-tile"><input type="radio" name="pitStart" value="Far" checked>Far</label>
+                            <label class="radio-tile"><input type="radio" name="pitStart" value="Close">Close</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="pitAttempted">Target Artifacts Attempted per Match</label>
+                        <input type="number" id="pitAttempted" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Do they actively prioritize sorting?</label>
+                        <div class="radio-tile-group">
+                            <label class="radio-tile"><input type="radio" name="pitSortingStrategy" value="Yes" checked>Yes</label>
+                            <label class="radio-tile"><input type="radio" name="pitSortingStrategy" value="No">No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Robot Quality Checklist</h2>
+                    <label class="check-item"><input type="checkbox" id="qc_parts"> All structural parts fully secure</label>
+                    <label class="check-item"><input type="checkbox" id="qc_wires"> All wiring managed, zip-tied & secure</label>
+                    <label class="check-item"><input type="checkbox" id="qc_sizing"> Clearly fits within baseline sizing constraints</label>
+                    <label class="check-item"><input type="checkbox" id="qc_durability"> Highly durable construction (unlikely to break)</label>
+                    <label class="check-item"><input type="checkbox" id="qc_clearance"> Good ground clearance / clean component protection</label>
+                    
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="pitNotes">General Build & Team Observations</label>
+                        <textarea id="pitNotes" rows="3" placeholder="Build quality, software confidence, general notes..."></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Save Pit Profile</button>
+            </form>
+
+            <div class="section export-section">
+                <h2>Pit Database</h2>
+                <div class="history-count" id="pitCountDisp">0 records cached.</div>
+                <button class="btn-secondary" onclick="exportCSV('pit')">Export Pit Layout to CSV</button>
+                <button class="btn-secondary" style="background-color: #c62828;" onclick="clearData('pit')">Clear Pit Data</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="matchTab" class="tab-content">
         <div class="container">
             <form id="matchForm">
                 <div class="section">
-                    <h2>Match Info</h2>
+                    <h2>Basic Info</h2>
                     <div class="form-group">
                         <label for="scoutName">Scouter Name</label>
                         <input type="text" id="scoutName" required placeholder="Your Name">
@@ -407,7 +547,7 @@
                     </div>
                     <div class="form-group">
                         <label for="matchNotes">Behavior Notes</label>
-                        <textarea id="matchNotes" rows="3" placeholder="Breakdowns, defense, penalties..."></textarea>
+                        <textarea id="matchNotes" rows="3" placeholder="Breakdowns, defense strategy, field penalties..."></textarea>
                     </div>
                 </div>
 
@@ -423,82 +563,12 @@
         </div>
     </div>
 
-    <div id="pitTab" class="tab-content">
-        <div class="container">
-            <form id="pitForm">
-                <div class="section">
-                    <h2>Pit Target</h2>
-                    <div class="form-group">
-                        <label for="pitScoutName">Scouter Name</label>
-                        <input type="text" id="pitScoutName" required placeholder="Your Name">
-                    </div>
-                    <div class="form-group">
-                        <label for="pitTeamNum">Team #</label>
-                        <input type="number" id="pitTeamNum" required min="1">
-                    </div>
-                </div>
-
-                <div class="section">
-                    <h2>Robot Specifications</h2>
-                    <div class="form-group">
-                        <label>Drivetrain Configuration</label>
-                        <div class="radio-tile-group">
-                            <label class="radio-tile"><input type="radio" name="drivetrain" value="Mecanum" checked>Mecanum</label>
-                            <label class="radio-tile"><input type="radio" name="drivetrain" value="Tank">Tank Drive</label>
-                            <label class="radio-tile"><input type="radio" name="drivetrain" value="Swerve">Swerve</label>
-                            <label class="radio-tile"><input type="radio" name="drivetrain" value="Other">Other</label>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Primary Intake Strategy</label>
-                        <div class="radio-tile-group">
-                            <label class="radio-tile"><input type="radio" name="intakeType" value="Active Roller" checked>Roller</label>
-                            <label class="radio-tile"><input type="radio" name="intakeType" value="Claw/Grabber">Claw</label>
-                            <label class="radio-tile"><input type="radio" name="intakeType" value="Specialized">Custom</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <h2>Strategic Intentions</h2>
-                    <div class="form-group">
-                        <label>Stated Autonomous Capabilities</label>
-                        <textarea id="pitAutoPlan" rows="2" placeholder="Scores pixels, leaves zone, side preferences..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Preferred Endgame Action</label>
-                        <div class="radio-tile-group">
-                            <label class="radio-tile"><input type="radio" name="pitEndgameIntent" value="Hang" checked>Lift / Hang</label>
-                            <label class="radio-tile"><input type="radio" name="pitEndgameIntent" value="Park">Just Park</label>
-                            <label class="radio-tile"><input type="radio" name="pitEndgameIntent" value="Both">Flexible</label>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="pitNotes">General Pit Notes</label>
-                        <textarea id="pitNotes" rows="3" placeholder="Build quality, software framework, overall team confidence..."></textarea>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-submit">Save Pit Profile</button>
-            </form>
-
-            <div class="section export-section">
-                <h2>Pit Database</h2>
-                <div class="history-count" id="pitCountDisp">0 records cached.</div>
-                <button class="btn-secondary" onclick="exportCSV('pit')">Export Pit Layout to CSV</button>
-                <button class="btn-secondary" style="background-color: #c62828;" onclick="clearData('pit')">Clear Pit Data</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Track match numerical structures
         const matchCounts = {
             autoAttempted: 0, autoMade: 0, autoSorted: 0,
             teleAttempted: 0, teleMade: 0, teleSorted: 0
         };
 
-        // Tab Handling System
         function switchTab(tabId, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -507,28 +577,25 @@
             window.scrollTo(0,0);
         }
 
-        // Cross-Validation Tracking Controller
+        // Logic validation: successful items cannot outpace general attempt markers
         function changeMatchVal(key, step) {
             let prefix = key.startsWith('auto') ? 'auto' : 'tele';
             let currentAttempted = matchCounts[`${prefix}Attempted`];
             
             if (key.endsWith('Made') || key.endsWith('Sorted')) {
-                // Check bounds against Attempted values
                 let newVal = Math.max(0, matchCounts[key] + step);
                 if (newVal <= currentAttempted) {
                     matchCounts[key] = newVal;
                 } else {
-                    alert(`Invalid logic: "Made/Sorted" cannot surpass total "Attempted" (${currentAttempted}).`);
+                    alert(`Invalid tracking: Successful completions cannot exceed total items attempted (${currentAttempted}).`);
                 }
             } else {
-                // Adjusting 'Attempted' value
                 let newVal = Math.max(0, matchCounts[key] + step);
-                // Prevent Attempted dropping below successes
                 let maxSuccess = Math.max(matchCounts[`${prefix}Made`], matchCounts[`${prefix}Sorted`]);
                 if (newVal >= maxSuccess) {
                     matchCounts[key] = newVal;
                 } else {
-                    alert(`Invalid logic: "Attempted" cannot drop beneath logged successes (${maxSuccess}).`);
+                    alert(`Invalid tracking: Attempts cannot fall below current successes (${maxSuccess}).`);
                 }
             }
             document.getElementById(`${key}-val`).innerText = matchCounts[key];
@@ -546,16 +613,16 @@
         }
 
         function refreshCounters() {
-            const matches = JSON.parse(localStorage.getItem('nexus_matches') || '[]');
-            const pits = JSON.parse(localStorage.getItem('nexus_pits') || '[]');
+            const matches = JSON.parse(localStorage.getItem('aether_matches') || '[]');
+            const pits = JSON.parse(localStorage.getItem('aether_pits') || '[]');
             document.getElementById('matchCountDisp').innerText = `${matches.length} profile(s) logged.`;
             document.getElementById('pitCountDisp').innerText = `${pits.length} team profile(s) logged.`;
         }
 
-        // Forms Handlers
+        // Processing submissions
         document.getElementById('matchForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            if(!document.getElementById('alliance').value) { return alert('Select an Alliance color!'); }
+            if(!document.getElementById('alliance').value) { return alert('Select an Alliance side color!'); }
 
             const entry = {
                 scoutName: document.getElementById('scoutName').value,
@@ -581,13 +648,12 @@
                 notes: document.getElementById('matchNotes').value.replace(/,/g, ';').replace(/\n/g, ' ')
             };
 
-            const db = JSON.parse(localStorage.getItem('nexus_matches') || '[]');
+            const db = JSON.parse(localStorage.getItem('aether_matches') || '[]');
             db.push(entry);
-            localStorage.setItem('nexus_matches', JSON.stringify(db));
+            localStorage.setItem('aether_matches', JSON.stringify(db));
 
-            alert('Match Data saved successfully!');
+            alert('Match profile compiled!');
             
-            // Preserve Identity but clear specific details
             const currentScout = document.getElementById('scoutName').value;
             document.getElementById('matchForm').reset();
             document.getElementById('scoutName').value = currentScout;
@@ -605,29 +671,39 @@
             const entry = {
                 pitScoutName: document.getElementById('pitScoutName').value,
                 pitTeamNum: document.getElementById('pitTeamNum').value,
+                dimensions: `${document.getElementById('dimX').value || '0'}x${document.getElementById('dimY').value || '0'}`,
                 drivetrain: document.querySelector('input[name="drivetrain"]:checked').value,
                 intakeType: document.querySelector('input[name="intakeType"]:checked').value,
-                pitAutoPlan: document.getElementById('pitAutoPlan').value.replace(/,/g, ';').replace(/\n/g, ' '),
-                pitEndgameIntent: document.querySelector('input[name="pitEndgameIntent"]:checked').value,
+                launcherType: document.querySelector('input[name="launcherType"]:checked').value,
+                sortingMech: document.querySelector('input[name="sortingMech"]:checked').value,
+                parkingMech: document.querySelector('input[name="parkingMech"]:checked').value,
+                pitTeamInputNotes: document.getElementById('pitTeamInputNotes').value.replace(/,/g, ';').replace(/\n/g, ' '),
+                pitStart: document.querySelector('input[name="pitStart"]:checked').value,
+                pitAttempted: document.getElementById('pitAttempted').value,
+                pitSortingStrategy: document.querySelector('input[name="pitSortingStrategy"]:checked').value,
+                qc_parts: document.getElementById('qc_parts').checked ? "Pass" : "Fail",
+                qc_wires: document.getElementById('qc_wires').checked ? "Pass" : "Fail",
+                qc_sizing: document.getElementById('qc_sizing').checked ? "Pass" : "Fail",
+                qc_durability: document.getElementById('qc_durability').checked ? "Pass" : "Fail",
+                qc_clearance: document.getElementById('qc_clearance').checked ? "Pass" : "Fail",
                 pitNotes: document.getElementById('pitNotes').value.replace(/,/g, ';').replace(/\n/g, ' ')
             };
 
-            const db = JSON.parse(localStorage.getItem('nexus_pits') || '[]');
+            const db = JSON.parse(localStorage.getItem('aether_pits') || '[]');
             db.push(entry);
-            localStorage.setItem('nexus_pits', JSON.stringify(db));
+            localStorage.setItem('aether_pits', JSON.stringify(db));
 
-            alert('Pit Information stored!');
+            alert('Pit Profile committed successfully!');
             const currentScout = document.getElementById('pitScoutName').value;
             document.getElementById('pitForm').reset();
             document.getElementById('pitScoutName').value = currentScout;
             refreshCounters();
         });
 
-        // Data Management Handling
         function exportCSV(type) {
-            const storeKey = type === 'match' ? 'nexus_matches' : 'nexus_pits';
+            const storeKey = type === 'match' ? 'aether_matches' : 'aether_pits';
             const data = JSON.parse(localStorage.getItem(storeKey) || '[]');
-            if(!data.length) return alert('No data stored to compile yet!');
+            if(!data.length) return alert('No elements found to construct CSV.');
 
             const headers = Object.keys(data[0]);
             let csvRows = [headers.join(',')];
@@ -638,15 +714,15 @@
             const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `NEXUS_${type.toUpperCase()}_EXPORT_${Date.now()}.csv`);
+            link.setAttribute("download", `AETHER_${type.toUpperCase()}_EXPORT_${Date.now()}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
         function clearData(type) {
-            const storeKey = type === 'match' ? 'nexus_matches' : 'nexus_pits';
-            if(confirm(`Are you sure you want to completely erase the local ${type} scouting database?`)) {
+            const storeKey = type === 'match' ? 'aether_matches' : 'aether_pits';
+            if(confirm(`Erase the total local baseline ${type} registry?`)) {
                 localStorage.removeItem(storeKey);
                 refreshCounters();
             }
