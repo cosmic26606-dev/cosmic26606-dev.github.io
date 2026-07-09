@@ -1,1048 +1,532 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>DECODE Simulator V2</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTC DECODE Scout (2025-2026)</title>
+    <style>
+        :root {
+            --primary: #4a148c;
+            --primary-light: #7c43bd;
+            --accent: #00e676;
+            --dark: #212121;
+            --light: #f5f5f5;
+            --red-alliance: #d32f2f;
+            --blue-alliance: #1976d2;
+        }
 
-<style>
-body{
-    margin:0;
-    overflow:hidden;
-    background:#111;
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
 
-canvas{
-    display:block;
-}
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            padding-bottom: 60px;
+        }
 
-#hud{
-    position:absolute;
-    top:10px;
-    left:10px;
-    color:white;
-    font-family:Arial;
-    background:rgba(0,0,0,.6);
-    padding:10px;
-}
-</style>
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-light);
+        }
+
+        .section h2 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            text-transform: uppercase;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            background: #fafafa;
+        }
+
+        .alliance-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .alliance-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            background: white;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        #alliance-red.active {
+            background-color: var(--red-alliance);
+            color: white;
+            border-color: var(--red-alliance);
+        }
+
+        #alliance-blue.active {
+            background-color: var(--blue-alliance);
+            color: white;
+            border-color: var(--blue-alliance);
+        }
+
+        /* Counter Styling */
+        .counter-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fcfcfc;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+
+        .counter-label {
+            font-weight: 500;
+        }
+
+        .counter-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-counter {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--primary);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .btn-counter:active {
+            background-color: var(--primary-light);
+        }
+
+        .counter-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        /* Radio Blocks */
+        .radio-tile-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .radio-tile {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            background: white;
+            text-align: center;
+        }
+
+        .radio-tile input {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .radio-tile:has(input:checked) {
+            border-color: var(--primary);
+            background-color: #f3e5f5;
+            color: var(--primary);
+        }
+
+        /* Action Buttons */
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--accent);
+            color: var(--dark);
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-submit:active {
+            opacity: 0.9;
+        }
+
+        .export-section {
+            margin-top: 30px;
+            background: #e0f2f1;
+            border-left: 5px solid #009688;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 10px;
+            background-color: #009688;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .history-count {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
-
 <body>
 
-<div id="hud">
-DECODE V2<br>
-WASD Drive<br>
-J/L Turn<br>
-Space Intake<br>
-F Burst Fire
-</div>
+    <header>
+        <h1>DECODE™ Scouting App</h1>
+        <p>FTC 2025-2026 Season</p>
+    </header>
 
-<canvas id="game"></canvas>
+    <div class="container">
+        <form id="scoutingForm">
+            
+            <div class="section">
+                <h2>Match Info</h2>
+                <div class="form-group">
+                    <label for="scoutName">Scout Name</label>
+                    <input type="text" id="scoutName" required placeholder="Your Name">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="matchNum">Match #</label>
+                        <input type="number" id="matchNum" required min="1">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="teamNum">Team #</label>
+                        <input type="number" id="teamNum" required min="1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Alliance</label>
+                    <div class="alliance-container">
+                        <div id="alliance-red" class="alliance-btn" onclick="setAlliance('Red')">RED</div>
+                        <div id="alliance-blue" class="alliance-btn" onclick="setAlliance('Blue')">BLUE</div>
+                    </div>
+                    <input type="hidden" id="alliance" required>
+                </div>
+            </div>
 
-<script>
+            <div class="section">
+                <h2>Autonomous</h2>
+                <div class="form-group">
+                    <label>Pre-loaded Artifact?</label>
+                    <div class="radio-tile-group">
+                        <label class="radio-tile">
+                            <input type="radio" name="preload" value="Yes"> Yes
+                        </label>
+                        <label class="radio-tile">
+                            <input type="radio" name="preload" value="No" checked> No
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Auto Navigation/Parking</label>
+                    <div class="radio-tile-group">
+                        <label class="radio-tile">
+                            <input type="radio" name="autoNav" value="None" checked> None
+                        </label>
+                        <label class="radio-tile">
+                            <input type="radio" name="autoNav" value="Parked"> Parked
+                        </label>
+                    </div>
+                </div>
+                <div class="counter-container">
+                    <span class="counter-label">Artifacts Scored in Auto</span>
+                    <div class="counter-controls">
+                        <button type="button" class="btn-counter" onclick="changeVal('autoArtifacts', -1)">-</button>
+                        <span id="autoArtifacts-val" class="counter-value">0</span>
+                        <button type="button" class="btn-counter" onclick="changeVal('autoArtifacts', 1)">+</button>
+                    </div>
+                </div>
+            </div>
 
-//////////////////////////////////////////////////
-// CANVAS
-//////////////////////////////////////////////////
+            <div class="section">
+                <h2>TeleOperated</h2>
+                <div class="counter-container">
+                    <span class="counter-label">Classified Artifacts</span>
+                    <div class="counter-controls">
+                        <button type="button" class="btn-counter" onclick="changeVal('teleClassified', -1)">-</button>
+                        <span id="teleClassified-val" class="counter-value">0</span>
+                        <button type="button" class="btn-counter" onclick="changeVal('teleClassified', 1)">+</button>
+                    </div>
+                </div>
+                <div class="counter-container">
+                    <span class="counter-label">Overflow Artifacts</span>
+                    <div class="counter-controls">
+                        <button type="button" class="btn-counter" onclick="changeVal('teleOverflow', -1)">-</button>
+                        <span id="teleOverflow-val" class="counter-value">0</span>
+                        <button type="button" class="btn-counter" onclick="changeVal('teleOverflow', 1)">+</button>
+                    </div>
+                </div>
+                <div class="counter-container">
+                    <span class="counter-label">Motif Patterns Formed</span>
+                    <div class="counter-controls">
+                        <button type="button" class="btn-counter" onclick="changeVal('teleMotifs', -1)">-</button>
+                        <span id="teleMotifs-val" class="counter-value">0</span>
+                        <button type="button" class="btn-counter" onclick="changeVal('teleMotifs', 1)">+</button>
+                    </div>
+                </div>
+            </div>
 
-const canvas =
-    document.getElementById(
-        "game"
-    );
+            <div class="section">
+                <h2>End Game</h2>
+                <div class="form-group">
+                    <label>Base Navigation / Parking</label>
+                    <div class="radio-tile-group">
+                        <label class="radio-tile">
+                            <input type="radio" name="endPark" value="None" checked> None
+                        </label>
+                        <label class="radio-tile">
+                            <input type="radio" name="endPark" value="Partial"> Partial
+                        </label>
+                        <label class="radio-tile">
+                            <input type="radio" name="endPark" value="Full"> Full
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Expanded in Height?</label>
+                    <div class="radio-tile-group">
+                        <label class="radio-tile">
+                            <input type="radio" name="heightExpand" value="Yes"> Yes
+                        </label>
+                        <label class="radio-tile">
+                            <input type="radio" name="heightExpand" value="No" checked> No
+                        </label>
+                    </div>
+                </div>
+            </div>
 
-const ctx =
-    canvas.getContext("2d");
+            <div class="section">
+                <h2>Post-Match Notes</h2>
+                <div class="form-group">
+                    <label for="driverSkill">Driver Capability</label>
+                    <select id="driverSkill">
+                        <option value="Average">Average</option>
+                        <option value="Excellent">Excellent / Fast</option>
+                        <option value="Struggled">Struggled / Inefficient</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Behavior / Breakdowns / General Notes</label>
+                    <textarea id="notes" rows="3" placeholder="E.g., intake broke halfway through, great defense, fast motif sorting..."></textarea>
+                </div>
+            </div>
 
-function resize(){
+            <button type="submit" class="btn-submit">Save Match Data</button>
+        </form>
 
-    canvas.width =
-        window.innerWidth;
+        <div class="section export-section">
+            <h2>Data Management</h2>
+            <div class="history-count" id="historyCount">0 matches saved locally.</div>
+            <button class="btn-secondary" onclick="exportToCSV()">Export All to CSV</button>
+            <button class="btn-secondary" style="background-color: #c62828;" onclick="clearStorage()">Clear Local Data</button>
+        </div>
+    </div>
 
-    canvas.height =
-        window.innerHeight;
+    <script>
+        // App State for Counters
+        const counts = {
+            autoArtifacts: 0,
+            teleClassified: 0,
+            teleOverflow: 0,
+            teleMotifs: 0
+        };
 
-}
+        function changeVal(key, step) {
+            counts[key] = Math.max(0, counts[key] + step);
+            document.getElementById(`${key}-val`).innerText = counts[key];
+        }
 
-resize();
+        function setAlliance(color) {
+            document.getElementById('alliance').value = color;
+            document.getElementById('alliance-red').classList.remove('active');
+            document.getElementById('alliance-blue').classList.remove('active');
+            
+            if(color === 'Red') {
+                document.getElementById('alliance-red').classList.add('active');
+            } else {
+                document.getElementById('alliance-blue').classList.add('active');
+            }
+        }
 
-window.addEventListener(
-    "resize",
-    resize
-);
+        function updateMatchCount() {
+            const currentData = JSON.parse(localStorage.getItem('ftcDecodeData') || '[]');
+            document.getElementById('historyCount').innerText = `${currentData.length} match(es) saved locally.`;
+        }
 
-//////////////////////////////////////////////////
-// FIELD
-//////////////////////////////////////////////////
-
-const TILE = 120;
-
-const FIELD = {
-
-    width: TILE * 6,
-    height: TILE * 6
-
-};
-
-//////////////////////////////////////////////////
-// INPUT
-//////////////////////////////////////////////////
-
-const keys = {};
-
-window.addEventListener(
-    "keydown",
-    e=>{
-
-        keys[
-            e.key.toLowerCase()
-        ] = true;
-
-        if(
-            e.code==="Space"
-        ){
-
+        // Form Submit handling
+        document.getElementById('scoutingForm').addEventListener('submit', function(e) {
             e.preventDefault();
-
-        }
-
-    }
-);
-
-window.addEventListener(
-    "keyup",
-    e=>{
-
-        keys[
-            e.key.toLowerCase()
-        ] = false;
-
-    }
-);
-
-//////////////////////////////////////////////////
-// ROBOT
-//////////////////////////////////////////////////
-
-const robot = {
-
-    x:
-        FIELD.width/2,
-
-    y:
-        FIELD.height/2,
-
-    heading:0,
-
-    width:84,
-    height:84,
-
-    intakeOn:false,
-
-    inventory:0,
-
-    maxInventory:3,
-
-    blueScore:0,
-
-    redScore:0
-
-};
-
-//////////////////////////////////////////////////
-// CAMERA
-//////////////////////////////////////////////////
-
-const camera = {
-
-    x:0,
-    y:0
-
-};
-
-//////////////////////////////////////////////////
-// GOALS
-//////////////////////////////////////////////////
-
-const goals = [
-
-{
-
-    alliance:"blue",
-
-    x:
-        FIELD.width-190,
-
-    y:150,
-
-    width:110,
-
-    height:180
-
-},
-
-{
-
-    alliance:"red",
-
-    x:
-        FIELD.width-190,
-
-    y:
-        FIELD.height-330,
-
-    width:110,
-
-    height:180
-
-}
-
-];
-
-//////////////////////////////////////////////////
-// ARTIFACTS
-//////////////////////////////////////////////////
-
-const artifacts = [];
-
-function Artifact(
-    x,
-    y,
-    color
-){
-
-    return {
-
-        x,
-        y,
-
-        vx:0,
-        vy:0,
-
-        radius:11,
-
-        color,
-
-        scored:false,
-
-        fired:false
-
-    };
-
-}
-
-//////////////////////////////////////////////////
-// 36 TOTAL
-//////////////////////////////////////////////////
-
-function generateArtifacts(){
-
-    artifacts.length = 0;
-
-    //////////////////////////////////////////////////
-    // LEFT CLUSTER
-    //////////////////////////////////////////////////
-
-    for(
-        let i=0;
-        i<12;
-        i++
-    ){
-
-        artifacts.push(
-
-            Artifact(
-
-                120 +
-                (i%4)*28,
-
-                120 +
-                Math.floor(i/4)
-                *28,
-
-                "purple"
-
-            )
-
-        );
-
-    }
-
-    //////////////////////////////////////////////////
-    // CENTER CLUSTER
-    //////////////////////////////////////////////////
-
-    for(
-        let i=0;
-        i<12;
-        i++
-    ){
-
-        artifacts.push(
-
-            Artifact(
-
-                FIELD.width/2
-                -50
-                +(i%4)*28,
-
-                FIELD.height/2
-                -50
-                +Math.floor(i/4)
-                *28,
-
-                "purple"
-
-            )
-
-        );
-
-    }
-
-    //////////////////////////////////////////////////
-    // RIGHT CLUSTER
-    //////////////////////////////////////////////////
-
-    for(
-        let i=0;
-        i<12;
-        i++
-    ){
-
-        artifacts.push(
-
-            Artifact(
-
-                FIELD.width
-                -260
-                +(i%4)*28,
-
-                FIELD.height/2
-                -50
-                +Math.floor(i/4)
-                *28,
-
-                "green"
-
-            )
-
-        );
-
-    }
-
-}
-
-generateArtifacts();
-
-//////////////////////////////////////////////////
-// UTILITIES
-//////////////////////////////////////////////////
-
-function rotatePoint(
-    x,
-    y,
-    angle
-){
-
-    return {
-
-        x:
-            x*Math.cos(angle)
-            -
-            y*Math.sin(angle),
-
-        y:
-            x*Math.sin(angle)
-            +
-            y*Math.cos(angle)
-
-    };
-
-}
-
-function worldToRobot(
-    wx,
-    wy
-){
-
-    const dx =
-        wx-robot.x;
-
-    const dy =
-        wy-robot.y;
-
-    const c =
-        Math.cos(
-            -robot.heading
-        );
-
-    const s =
-        Math.sin(
-            -robot.heading
-        );
-
-    return {
-
-        x:
-            dx*c
-            -
-            dy*s,
-
-        y:
-            dx*s
-            +
-            dy*c
-
-    };
-
-}
-
-//////////////////////////////////////////////////
-// DRAW FIELD
-//////////////////////////////////////////////////
-
-function drawField(){
-
-    //////////////////////////////////////////////////
-    // TILES
-    //////////////////////////////////////////////////
-
-    for(
-        let x=0;
-        x<6;
-        x++
-    ){
-
-        for(
-            let y=0;
-            y<6;
-            y++
-        ){
-
-            ctx.fillStyle =
-                (
-                    x+y
-                )%2
-                ?
-                "#353535"
-                :
-                "#404040";
-
-            ctx.fillRect(
-
-                x*TILE,
-                y*TILE,
-
-                TILE,
-                TILE
-
-            );
-
-            ctx.strokeStyle =
-                "#222";
-
-            ctx.strokeRect(
-
-                x*TILE,
-                y*TILE,
-
-                TILE,
-                TILE
-
-            );
-
-        }
-
-    }
-
-    //////////////////////////////////////////////////
-    // CROSSING TAPES
-    //////////////////////////////////////////////////
-
-    ctx.strokeStyle =
-        "white";
-
-    ctx.lineWidth = 7;
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        0,
-        0
-    );
-
-    ctx.lineTo(
-        360,
-        360
-    );
-
-    ctx.stroke();
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        0,
-        FIELD.height
-    );
-
-    ctx.lineTo(
-        360,
-        360
-    );
-
-    ctx.stroke();
-
-    //////////////////////////////////////////////////
-    // BLUE LOADING AREA
-    //////////////////////////////////////////////////
-
-    ctx.fillStyle =
-        "#2244ff";
-
-    ctx.fillRect(
-        0,
-        0,
-        110,
-        110
-    );
-
-    //////////////////////////////////////////////////
-    // RED LOADING AREA
-    //////////////////////////////////////////////////
-
-    ctx.fillStyle =
-        "#ff3333";
-
-    ctx.fillRect(
-        0,
-        FIELD.height-110,
-        110,
-        110
-    );
-
-    //////////////////////////////////////////////////
-    // GOALS
-    //////////////////////////////////////////////////
-
-    for(
-        const goal
-        of goals
-    ){
-
-        ctx.fillStyle =
-            goal.alliance
-            ==="blue"
-            ?
-            "#2244ff"
-            :
-            "#ff3333";
-
-        ctx.fillRect(
-
-            goal.x,
-            goal.y,
-
-            goal.width,
-            goal.height
-
-        );
-
-    }
-
-    //////////////////////////////////////////////////
-// INPUT HANDLING (TOGGLE INTAKE + FIRE)
-//////////////////////////////////////////////////
-
-window.addEventListener("keydown", e=>{
-
-    const k = e.key.toLowerCase();
-
-    if(k==="f") burstFire();
-
-    if(e.code==="Space"){
-
-        robot.intakeOn =
-            !robot.intakeOn;
-
-    }
-
-});
-
-//////////////////////////////////////////////////
-// BURST FIRE
-//////////////////////////////////////////////////
-
-let burstLock = false;
-
-function fireArtifact(){
-
-    if(robot.inventory<=0)
-        return;
-
-    robot.inventory--;
-
-    const muzzle =
-        rotatePoint(
-            robot.width/2 + 25,
-            0,
-            robot.heading
-        );
-
-    artifacts.push({
-
-        x:robot.x + muzzle.x,
-        y:robot.y + muzzle.y,
-
-        vx:
-            Math.cos(robot.heading)
-            * 650,
-
-        vy:
-            Math.sin(robot.heading)
-            * 650,
-
-        radius:10,
-
-        fired:true,
-
-        color:"orange",
-
-        scored:false
-
-    });
-
-}
-
-function burstFire(){
-
-    if(burstLock)
-        return;
-
-    if(robot.inventory<=0)
-        return;
-
-    burstLock = true;
-
-    const shots =
-        Math.min(
-            3,
-            robot.inventory
-        );
-
-    for(
-        let i=0;
-        i<shots;
-        i++
-    ){
-
-        setTimeout(()=>{
-
-            fireArtifact();
-
-        }, i*167);
-
-    }
-
-    setTimeout(()=>{
-
-        burstLock = false;
-
-    },500);
-
-}
-
-//////////////////////////////////////////////////
-// ROBOT UPDATE (FIELD-CENTRIC)
-//////////////////////////////////////////////////
-
-function updateRobot(dt){
-
-    let x = 0;
-    let y = 0;
-
-    if(keys["w"]) y -= 1;
-    if(keys["s"]) y += 1;
-    if(keys["a"]) x -= 1;
-    if(keys["d"]) x += 1;
-
-    const mag =
-        Math.hypot(x,y);
-
-    if(mag>0){
-
-        x/=mag;
-        y/=mag;
-
-    }
-
-    const speed = 280;
-
-    robot.x += x*speed*dt;
-    robot.y += y*speed*dt;
-
-    if(keys["j"])
-        robot.heading -= 2.7*dt;
-
-    if(keys["l"])
-        robot.heading += 2.7*dt;
-
-}
-
-//////////////////////////////////////////////////
-// ARTIFACT UPDATE + COLLISION + SCORING
-//////////////////////////////////////////////////
-
-function updateArtifacts(dt){
-
-    for(
-        let i=artifacts.length-1;
-        i>=0;
-        i--
-    ){
-
-        const a = artifacts[i];
-
-        a.x += a.vx*dt;
-        a.y += a.vy*dt;
-
-        a.vx *= 0.99;
-        a.vy *= 0.99;
-
-        //////////////////////////////////////////////////
-        // ROBOT COLLISION (NO PHASING)
-        //////////////////////////////////////////////////
-
-        const local =
-            worldToRobot(
-                a.x,
-                a.y
-            );
-
-        const hw =
-            robot.width/2 +
-            a.radius;
-
-        const hh =
-            robot.height/2 +
-            a.radius;
-
-        if(
-            Math.abs(local.x)<hw &&
-            Math.abs(local.y)<hh
-        ){
-
-            const ox =
-                hw -
-                Math.abs(local.x);
-
-            const oy =
-                hh -
-                Math.abs(local.y);
-
-            if(ox<oy){
-
-                local.x +=
-                    Math.sign(local.x)
-                    * ox;
-
-            }else{
-
-                local.y +=
-                    Math.sign(local.y)
-                    * oy;
-
+            
+            if(!document.getElementById('alliance').value) {
+                alert('Please select an Alliance color!');
+                return;
             }
 
-            const world =
-                rotatePoint(
-                    local.x,
-                    local.y,
-                    robot.heading
-                );
+            const matchRecord = {
+                scoutName: document.getElementById('scoutName').value,
+                matchNum: document.getElementById('matchNum').value,
+                teamNum: document.getElementById('teamNum').value,
+                alliance: document.getElementById('alliance').value,
+                preload: document.querySelector('input[name="preload"]:checked').value,
+                autoNav: document.querySelector('input[name="autoNav"]:checked').value,
+                autoArtifacts: counts.autoArtifacts,
+                teleClassified: counts.teleClassified,
+                teleOverflow: counts.teleOverflow,
+                teleMotifs: counts.teleMotifs,
+                endPark: document.querySelector('input[name="endPark"]:checked').value,
+                heightExpand: document.querySelector('input[name="heightExpand"]:checked').value,
+                driverSkill: document.getElementById('driverSkill').value,
+                notes: document.getElementById('notes').value.replace(/,/g, ';') // Clean up commas for CSV safety
+            };
 
-            a.x = robot.x + world.x;
-            a.y = robot.y + world.y;
+            // Save to localStorage array
+            const currentData = JSON.parse(localStorage.getItem('ftcDecodeData') || '[]');
+            currentData.push(matchRecord);
+            localStorage.setItem('ftcDecodeData', JSON.stringify(currentData));
 
+            // Reset and Alert
+            alert(`Match ${matchRecord.matchNum} for Team ${matchRecord.teamNum} successfully saved!`);
+            resetForm();
+            updateMatchCount();
+        });
+
+        function resetForm() {
+            // Keep Scout Name populated to avoid retyping
+            const scout = document.getElementById('scoutName').value;
+            document.getElementById('scoutingForm').reset();
+            document.getElementById('scoutName').value = scout;
+            
+            // Reset state counters
+            for (let key in counts) {
+                counts[key] = 0;
+                document.getElementById(`${key}-val`).innerText = 0;
+            }
+            
+            // Reset alliance buttons
+            document.getElementById('alliance').value = '';
+            document.getElementById('alliance-red').classList.remove('active');
+            document.getElementById('alliance-blue').classList.remove('active');
+            window.scrollTo(0, 0);
         }
 
-        //////////////////////////////////////////////////
-        // SCORING + EJECTION (DO NOT DELETE ARTIFACT)
-        //////////////////////////////////////////////////
-
-        if(a.fired && !a.scored){
-
-            for(const g of goals){
-
-                if(
-                    a.x > g.x &&
-                    a.x < g.x + g.width &&
-                    a.y > g.y &&
-                    a.y < g.y + g.height
-                ){
-
-                    a.scored = true;
-
-                    if(g.alliance==="blue")
-                        robot.blueScore++;
-
-                    if(g.alliance==="red")
-                        robot.redScore++;
-
-                    // eject artifact out of goal
-                    a.vx = 200;
-                    a.vy = (Math.random()-0.5)*120;
-
-                    a.x = g.x + g.width + 20;
-
-                    break;
-
-                }
-
+        function exportToCSV() {
+            const data = JSON.parse(localStorage.getItem('ftcDecodeData') || '[]');
+            if(data.length === 0) {
+                alert("No match data saved to export yet!");
+                return;
             }
 
-        }
+            // Define headers
+            const headers = Object.keys(data[0]);
+            let csvRows = [];
+            csvRows.push(headers.join(','));
 
-    }
-
-}
-
-//////////////////////////////////////////////////
-// INTAKE SYSTEM (MAX 3)
-//////////////////////////////////////////////////
-
-function updateIntake(){
-
-    if(!robot.intakeOn)
-        return;
-
-    if(robot.inventory>=3)
-        return;
-
-    const intake =
-        rotatePoint(
-            robot.width/2 + 10,
-            0,
-            robot.heading
-        );
-
-    const ix =
-        robot.x + intake.x;
-
-    const iy =
-        robot.y + intake.y;
-
-    for(
-        let i=artifacts.length-1;
-        i>=0;
-        i--
-    ){
-
-        const a = artifacts[i];
-
-        if(a.fired)
-            continue;
-
-        const d =
-            Math.hypot(
-                a.x-ix,
-                a.y-iy
-            );
-
-        if(d<18){
-
-            const local =
-                worldToRobot(
-                    a.x,
-                    a.y
-                );
-
-            if(local.x > robot.width/2 - 5){
-
-                artifacts.splice(i,1);
-
-                robot.inventory++;
-
-                if(robot.inventory>=3)
-                    break;
-
+            // Map variables out to rows
+            for (const row of data) {
+                const values = headers.map(header => {
+                    return `"${row[header]}"`;
+                });
+                csvRows.push(values.join(','));
             }
 
+            const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `FTC_DECODE_ScoutingData_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
-    }
+        function clearStorage() {
+            if(confirm("Are you absolutely sure you want to clear all saved matches? Make sure you have exported your data first!")) {
+                localStorage.removeItem('ftcDecodeData');
+                updateMatchCount();
+            }
+        }
 
-}
-
-//////////////////////////////////////////////////
-// CAMERA
-//////////////////////////////////////////////////
-
-function updateCamera(){
-
-    camera.x =
-        robot.x -
-        canvas.width/2;
-
-    camera.y =
-        robot.y -
-        canvas.height/2;
-
-}
-
-//////////////////////////////////////////////////
-// DRAW ROBOT
-//////////////////////////////////////////////////
-
-function drawRobot(){
-
-    ctx.save();
-
-    ctx.translate(
-        robot.x,
-        robot.y
-    );
-
-    ctx.rotate(robot.heading);
-
-    ctx.fillStyle="#00c8ff";
-
-    ctx.fillRect(
-        -robot.width/2,
-        -robot.height/2,
-        robot.width,
-        robot.height
-    );
-
-    // intake indicator
-    ctx.fillStyle =
-        robot.intakeOn
-        ? "lime"
-        : "red";
-
-    ctx.fillRect(
-        robot.width/2 - 10,
-        -18,
-        14,
-        36
-    );
-
-    ctx.restore();
-
-}
-
-//////////////////////////////////////////////////
-// DRAW ARTIFACTS
-//////////////////////////////////////////////////
-
-function drawArtifacts(){
-
-    for(const a of artifacts){
-
-        ctx.fillStyle =
-            a.color==="green"
-            ? "#00cc55"
-            : "#aa55ff";
-
-        ctx.beginPath();
-
-        ctx.arc(
-            a.x,
-            a.y,
-            a.radius,
-            0,
-            Math.PI*2
-        );
-
-        ctx.fill();
-
-    }
-
-}
-
-//////////////////////////////////////////////////
-// HUD
-//////////////////////////////////////////////////
-
-function drawHUD(){
-
-    ctx.setTransform(
-        1,0,0,1,0,0
-    );
-
-    ctx.fillStyle="white";
-
-    ctx.font="16px Arial";
-
-    ctx.fillText(
-        "Inventory: "
-        + robot.inventory,
-        20,
-        40
-    );
-
-    ctx.fillText(
-        "Blue Score: "
-        + robot.blueScore,
-        20,
-        65
-    );
-
-    ctx.fillText(
-        "Red Score: "
-        + robot.redScore,
-        20,
-        90
-    );
-
-}
-
-//////////////////////////////////////////////////
-// MAIN LOOP
-//////////////////////////////////////////////////
-
-let last =
-    performance.now();
-
-function loop(now){
-
-    const dt =
-        Math.min(
-            (now-last)/1000,
-            0.03
-        );
-
-    last = now;
-
-    updateRobot(dt);
-    updateArtifacts(dt);
-    updateIntake();
-    updateCamera();
-
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-    ctx.save();
-
-    ctx.translate(
-        -camera.x,
-        -camera.y
-    );
-
-    drawField();
-    drawArtifacts();
-    drawRobot();
-
-    ctx.restore();
-
-    drawHUD();
-
-    requestAnimationFrame(loop);
-
-}
-
-requestAnimationFrame(loop);
-    
-}
+        // Initialize display count on load
+        window.onload = updateMatchCount;
+    </script>
+</body>
+</html>
