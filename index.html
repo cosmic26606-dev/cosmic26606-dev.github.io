@@ -397,11 +397,11 @@
                 <div class="section">
                     <h2>Robot Quality Checklist</h2>
                     <label class="check-item"><input type="checkbox" id="qc_parts" onchange="calculateQCScore()"> All structural parts fully secure</label>
-                    <label class="check-item"><input type="checkbox" id="qc_wires" onchange="changeQCConfOrScore()"> All wiring managed, zip-tied & secure</label>
+                    <label class="check-item"><input type="checkbox" id="qc_wires" onchange="calculateQCScore()"> All wiring managed, zip-tied & secure</label>
                     <label class="check-item"><input type="checkbox" id="qc_sizing" onchange="calculateQCScore()"> Clearly fits within baseline sizing constraints</label>
                     <label class="check-item"><input type="checkbox" id="qc_durability" onchange="calculateQCScore()"> Highly durable construction (unlikely to break)</label>
                     <label class="check-item"><input type="checkbox" id="qc_clearance" onchange="calculateQCScore()"> Good ground clearance / clean component protection</label>
-                    <label class="check-item"><input type="checkbox" id="qc_confidence" onchange="changeQCConfOrScore()"> Team displays high operational confidence & preparedness</label>
+                    <label class="check-item"><input type="checkbox" id="qc_confidence" onchange="calculateQCScore()"> Team displays high operational confidence & preparedness</label>
                     
                     <div class="qc-score-panel">
                         <div class="qc-score-num">Quality Index: <span id="qc_score_disp">0/6</span></div>
@@ -655,51 +655,49 @@
             document.getElementById(`${key}-val`).innerText = matchCounts[key];
         }
 
-        function changeQCConfOrScore() {
-            calculateQCScore();
-        }
-
-        // Advanced Logic Matrix Evaluation Engine
+        // Comprehensive Dynamic Matrix Evaluation Engine
         function calculateQCScore() {
-            const boxes = ['qc_parts', 'qc_wires', 'qc_sizing', 'qc_durability', 'qc_clearance', 'qc_confidence'];
-            let score = 0;
-            boxes.forEach(id => { if(document.getElementById(id).checked) score++; });
+            const checklist = {
+                parts: document.getElementById('qc_parts').checked,
+                wires: document.getElementById('qc_wires').checked,
+                sizing: document.getElementById('qc_sizing').checked,
+                durability: document.getElementById('qc_durability').checked,
+                clearance: document.getElementById('qc_clearance').checked,
+                confidence: document.getElementById('qc_confidence').checked
+            };
             
-            document.getElementById('qc_score_disp').innerText = `${score}/6`;
-
-            const hasConfidence = document.getElementById('qc_confidence').checked;
+            let checkedCount = 0;
+            for (let key in checklist) { if(checklist[key]) checkedCount++; }
             
-            // Calculate mechanical traits checked out of 5 items
-            let mechScore = 0;
-            ['qc_parts', 'qc_wires', 'qc_sizing', 'qc_durability', 'qc_clearance'].forEach(id => {
-                if(document.getElementById(id).checked) mechScore++;
-            });
+            document.getElementById('qc_score_disp').innerText = `${checkedCount}/6`;
             
             let description = "";
 
-            if (score === 6) {
-                description = "Robot is of excellent quality and team is confident.";
-            } else if (score === 0) {
-                description = "Critical build flaws detected. No baseline configurations confirmed.";
-            } else if (mechScore >= 4 && !hasConfidence) {
-                description = "Excellent build quality, but team lacks confidence or preparedness.";
-            } else if (mechScore <= 1 && hasConfidence) {
-                description = "Robot structural traits appear low quality, but the team displays high operational confidence.";
-            } else if (mechScore === 5 && !hasConfidence) {
-                description = "Flawless mechanical architecture verified; team layout readiness incomplete.";
+            if (checkedCount === 6) {
+                description = "Flawless technical architecture. Inspection-ready and competitive configuration.";
+            } else if (checkedCount === 0) {
+                description = "Critical warning: No build features verified. High inspection risk.";
+            } else if (!checklist.sizing && checklist.confidence) {
+                description = "Risk warning: Team exhibits extreme confidence but robot fails sizing check constraints!";
+            } else if (!checklist.parts || !checklist.durability) {
+                description = "Mechanical Alert: Integrity issues detected. Loose parts or structural vulnerabilities present.";
+            } else if (!checklist.wires && checklist.parts) {
+                description = "Structure is solid, but unsafe electrical routing / unmanaged wiring presents entanglement/disconnection risks.";
+            } else if (!checklist.clearance) {
+                description = "Low component clearance profile. Prone to high-centering or bottoming out on field elements.";
             } else {
-                // Procedural contextual text strings based on raw metrics breakdown
-                switch(score) {
-                    case 5: description = "High tier construction and strong team preparedness parameters."; break;
-                    case 4: description = "Solid mid-tier build setup; minor structural or wiring cleanup recommended."; break;
-                    case 3: description = "Moderate balance of structural features; standard engineering quality."; break;
-                    case 2: description = "Substantial mechanical risks or unmanaged wire systems flagged."; break;
-                    case 1: description = "Minimal functional checkmarks passed. Construction instability risks present."; break;
+                // Tiered fallbacks for generic counts
+                switch(checkedCount) {
+                    case 5: description = "Highly robust build. Minor polish required on remaining metric."; break;
+                    case 4: description = "Stable design parameters. Meets operational criteria for regular gameplay."; break;
+                    case 3: description = "Baseline stability achieved, but structural anomalies or compliance gaps persist."; break;
+                    case 2: description = "Suboptimal performance build. High probability of field breakdowns without modifications."; break;
+                    case 1: description = "Severe developmental state. Immediate structural reinforcement suggested."; break;
                 }
             }
 
             document.getElementById('qc_desc_disp').innerText = description;
-            return { score, description };
+            return { score: checkedCount, description };
         }
 
         function updateSliderDisp(id) {
