@@ -14,6 +14,17 @@
             --light: #f8f9fa;
             --red-alliance: #d32f2f;
             --blue-alliance: #1976d2;
+            
+            /* Status Indicators */
+            --status-green-bg: #e8f5e9;
+            --status-green-border: #81c784;
+            --status-green-text: #1b5e20;
+            --status-yellow-bg: #fffde7;
+            --status-yellow-border: #fff176;
+            --status-yellow-text: #f57f17;
+            --status-red-bg: #ffebee;
+            --status-red-border: #e57373;
+            --status-red-text: #b71c1c;
         }
 
         * {
@@ -143,6 +154,13 @@
             border-radius: 4px;
             font-size: 1rem;
             background: #fafafa;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            background: #ffffff;
         }
 
         .alliance-container {
@@ -159,6 +177,7 @@
             font-weight: bold;
             cursor: pointer;
             text-align: center;
+            transition: 0.15s ease-in-out;
         }
 
         #alliance-red.active { background-color: var(--red-alliance); color: white; border-color: var(--red-alliance); }
@@ -192,6 +211,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: background-color 0.1s;
+        }
+
+        .btn-counter:active {
+            background-color: var(--primary-dark);
         }
 
         .counter-value { font-size: 1.2rem; font-weight: bold; min-width: 28px; text-align: center; }
@@ -213,6 +237,7 @@
             background: white;
             text-align: center;
             font-size: 0.9rem;
+            transition: all 0.15s ease-in-out;
         }
         .radio-tile input { position: absolute; opacity: 0; }
         .radio-tile:has(input:checked) { border-color: var(--primary); background-color: #e3f2fd; color: var(--primary-dark); }
@@ -235,23 +260,24 @@
 
         /* Quality Metrics Display Panel */
         .qc-score-panel {
-            background-color: #f1f8ff;
-            border: 1px dashed var(--primary-light);
+            background-color: #fafafa;
+            border: 1px solid #ccc;
             border-radius: 6px;
-            padding: 12px;
+            padding: 14px;
             margin-top: 15px;
-            text-align: center;
+            text-align: left;
+            transition: all 0.25s ease-in-out;
         }
         .qc-score-num {
-            font-size: 1.4rem;
+            font-size: 1.1rem;
             font-weight: 800;
-            color: var(--primary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .qc-score-desc {
             font-size: 0.95rem;
-            font-weight: 600;
-            color: #333;
-            margin-top: 6px;
+            font-weight: 500;
             line-height: 1.4;
         }
 
@@ -272,6 +298,10 @@
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s, background-color 0.1s;
+        }
+        .btn-submit:active {
+            transform: scale(0.99);
         }
 
         .export-section { margin-top: 30px; background: #e0f2f1; border-left: 5px solid #009688; }
@@ -403,9 +433,9 @@
                     <label class="check-item"><input type="checkbox" id="qc_clearance" onchange="calculateQCScore()"> Good ground clearance / clean component protection</label>
                     <label class="check-item"><input type="checkbox" id="qc_confidence" onchange="calculateQCScore()"> Team displays high operational confidence & preparedness</label>
                     
-                    <div class="qc-score-panel">
-                        <div class="qc-score-num">Quality Index: <span id="qc_score_disp">0/6</span></div>
-                        <div class="qc-score-desc" id="qc_desc_disp">No baseline tracking started. Waiting for profile checkboxes...</div>
+                    <div class="qc-score-panel" id="qc_panel">
+                        <div class="qc-score-num" id="qc_title_disp">Evaluation Matrix</div>
+                        <div class="qc-score-desc" id="qc_desc_disp">Awaiting parameters to construct evaluation summary.</div>
                     </div>
 
                     <div class="form-group" style="margin-top: 15px;">
@@ -600,7 +630,11 @@
                 </div>
 
                 <button type="submit" class="btn-submit">Save Match Entry</button>
-            </form> profile(s) logged.</div>
+            </form>
+
+            <div class="section export-section">
+                <h2>Match Database</h2>
+                <div class="history-count" id="matchCountDisp">0 records cached.</div>
                 <button class="btn-secondary" onclick="exportCSV('match')">Export Matches to CSV</button>
                 <button class="btn-secondary" style="background-color: #c62828;" onclick="clearData('match')">Clear Match Data</button>
             </div>
@@ -651,7 +685,7 @@
             document.getElementById(`${key}-val`).innerText = matchCounts[key];
         }
 
-        // Aether Archetype Analysis Engine
+        // Professional Scouting Synthesis Engine
         function calculateQCScore() {
             const traits = {
                 parts: document.getElementById('qc_parts').checked,
@@ -663,48 +697,71 @@
             };
             
             let totalChecked = Object.values(traits).filter(Boolean).length;
-            document.getElementById('qc_score_disp').innerText = `${totalChecked}/6`;
+            let mechanicalItems = [traits.parts, traits.wires, traits.sizing, traits.durability, traits.clearance];
+            let mechanicalChecked = mechanicalItems.filter(Boolean).length;
 
-            let description = "";
+            const panel = document.getElementById('qc_panel');
+            const titleDisp = document.getElementById('qc_title_disp');
+            const descDisp = document.getElementById('qc_desc_disp');
 
-            // Evaluate specific multi-checkbox states for high-value holistic scouting archetypes
+            let category = "HIGH RISK PROFILE";
+            let description = "Critical architectural omissions detected. No structural metrics verified; likely to face inspection complications or severe field performance constraints.";
+            let colorTheme = "red";
+
+            // Advanced Cross-Correlation Assessment Logic
             if (totalChecked === 6) {
-                description = "⭐ ELITE CONTENDER: An exceptional, inspection-ready masterpiece. Highly optimized mechanical layout backboned by a deeply organized, polished drive team.";
-            } else if (totalChecked === 0) {
-                description = "🚨 UNVERIFIED / UNKNOWN PROFILE: Zero structural parameters confirmed. High vulnerability of failing hardware inspection or breaking down early.";
-            } else if (traits.confidence && !traits.parts && !traits.durability) {
-                description = "💥 GLASS CANNON PROFILE: Drive team exhibits high operational confidence, but the underlying physical frame contains serious durability flaws and structural risks.";
-            } else if (!traits.confidence && traits.parts && traits.durability && traits.sizing) {
-                description = "🐴 THE DARK HORSE: A remarkably robust, cleanly built mechanical frame that is ready to play, but held back by team hesitation or software unreadiness.";
-            } else if (traits.sizing && traits.wires && (!traits.parts || !traits.durability)) {
-                description = "📋 INSPECTION READY, FIELD FRAGILE: Fits sizing limits nicely with safe, neat wiring, but lacks structural reinforcement. Prone to intense chassis warping under heavy defense.";
+                category = "OPTIMAL STABILITY PROFILE";
+                description = "Chassis mechanics fully optimized alongside precise wire management. Drive team displays exceptional operational preparedness; high-conviction option for alliance configurations.";
+                colorTheme = "green";
+            } else if (totalChecked === 5) {
+                category = "RELIABLE HARDWARE SYSTEM";
+                description = "Robust engineering presentation with minimal structural vulnerabilities. Solid build execution that indicates standard match lifecycle compliance.";
+                colorTheme = "green";
+            } else if (mechanicalChecked === 5 && !traits.confidence) {
+                category = "UNVERIFIED OPERATIONAL READINESS";
+                description = "Chassis and physical compliance fields are flawlessly verified, but the drive team indicates noticeable operational hesitation or system unreadiness.";
+                colorTheme = "yellow";
+            } else if (traits.confidence && mechanicalChecked <= 2) {
+                category = "STRUCTURAL LIABILITIES SPOTTED";
+                description = "Drive team communicates high capability parameters, but the physical chassis demonstrates immediate durability concerns and unmanaged wiring risks.";
+                colorTheme = "red";
             } else if (!traits.wires && traits.parts && traits.durability) {
-                description = "⚡ TANGLED TANK: Mechanically solid and built like a brick, but unmanaged internal wiring leaves them dangerously exposed to disconnects or direct component snags.";
-            } else if (!traits.clearance && (traits.parts || traits.durability)) {
-                description = "🚜 LOW-CLEARANCE BULLDOZER: Strong mechanical build, but extremely low ground clearance or zero critical shielding makes them prone to getting stuck on field debris.";
-            } else {
-                // Tiered balanced profile descriptors for messy mid-range mixtures
-                switch(totalChecked) {
-                    case 5:
-                        description = "🛡️ ROBUST SUITE: Reliable and nearly optimal hardware execution. Minor optimization remaining to claim total top-tier field preparedness.";
-                        break;
-                    case 4:
-                        description = "⚙️ WORKHORSE PROFILE: Functional, standard-tier configuration capable of running consistent match cycles. Expect minor structural or wiring quirks.";
-                        break;
-                    case 3:
-                        description = "⚠️ VOLATILE MIX: Baseline engineering structure is present, but missing compliance marks present critical performance risks or inspection headaches.";
-                        break;
-                    case 2:
-                        description = "🛠️ DEVELOPMENTAL TIERS: Minimal assembly structure verified. Highly vulnerable to systemic field failures without immediate mechanical re-work.";
-                        break;
-                    case 1:
-                        description = "📉 CRITICAL STATUS: Substantial baseline omissions detected. Significant structural instabilities require immediate support before match entry.";
-                        break;
-                }
+                category = "ELECTRICAL DISCONNECT HAZARD";
+                description = "The mechanical foundation is physically resilient, but completely unmanaged electrical infrastructure leaves the system highly vulnerable to field debris snags.";
+                colorTheme = "yellow";
+            } else if (!traits.clearance && mechanicalChecked >= 3) {
+                category = "GROUND DEBRIS BELLY-PAN RISK";
+                description = "Solid general chassis framework layout, but minimal component protection or low ground clearance presents high risks of hanging up on game elements.";
+                colorTheme = "yellow";
+            } else if (totalChecked >= 3 && totalChecked <= 4) {
+                category = "MODERATE OPERATIONAL DEGRADATION";
+                description = "Functional baseline configurations compiled. Expect minor mechanical bottlenecks or electrical quirks to arise under defensive pressure.";
+                colorTheme = "yellow";
+            } else if (totalChecked > 0 && totalChecked <= 2) {
+                category = "ELEVATED SYSTEMIC RISKS";
+                description = "Severe structural limitations confirmed. Immediate physical reinforcement or wiring re-work required prior to competitive play.";
+                colorTheme = "red";
             }
 
-            document.getElementById('qc_desc_disp').innerText = description;
-            return { score: totalChecked, description };
+            // Apply Dynamic Strategic Color Coding
+            titleDisp.innerText = `${category} (${totalChecked}/6)`;
+            descDisp.innerText = description;
+
+            if (colorTheme === "green") {
+                panel.style.backgroundColor = "var(--status-green-bg)";
+                panel.style.borderColor = "var(--status-green-border)";
+                panel.style.color = "var(--status-green-text)";
+            } else if (colorTheme === "yellow") {
+                panel.style.backgroundColor = "var(--status-yellow-bg)";
+                panel.style.borderColor = "var(--status-yellow-border)";
+                panel.style.color = "var(--status-yellow-text)";
+            } else {
+                panel.style.backgroundColor = "var(--status-red-bg)";
+                panel.style.borderColor = "var(--status-red-border)";
+                panel.style.color = "var(--status-red-text)";
+            }
+
+            return { score: totalChecked, description: `${category}: ${description}` };
         }
 
         function updateSliderDisp(id) {
